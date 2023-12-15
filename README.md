@@ -1,3 +1,8 @@
+## About
+This is a simple evaluation framework (WIP) that is meant to be easily extensible for common NLP evaluations/tasks.
+
+The code is designed to be minimal but reuseble, it has a good abstraction and directory structure for contributor and researcher to work with.  
+
 ## Quick start
 For example, to evaluate phi-2 model on SNLI:
 ```sh
