@@ -1,6 +1,8 @@
 # Load model
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import TextStreamer
+
 torch.set_default_device("cpu")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", 
@@ -9,6 +11,7 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
                                              flash_rotary=True, # rotary embedding w/ flash_attn
                                              fused_dense=True, # operation fusion
                                              trust_remote_code=True)
+streamer = TextStreamer(tokenizer)
 
 # Evaluate
 from datasets import load_dataset
@@ -21,6 +24,7 @@ phi2_settings = {
     "max_length": 128,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
+    "streamer": streamer,
     "debug": False
 }
 
