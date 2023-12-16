@@ -46,7 +46,9 @@ To evaluate this model setting on the SNLI dataset,
 ```py
 from datasets import load_dataset
 
-lce.evaluate(phi2_settings, load_dataset("snli")['test'],
+simple_test_data = load_dataset("snli")['test'].select(range(3))
+
+lce.evaluate(phi2_settings, simple_test_data,
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
             lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])
