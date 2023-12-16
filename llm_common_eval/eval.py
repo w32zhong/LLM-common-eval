@@ -1,12 +1,31 @@
 from collections import defaultdict
 
 
+def set_seed(seed):
+    import torch
+    import random
+    import numpy as np
+    from transformers import set_seed
+    set_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+
+
 def collate_passthrough(batch_data):
     return batch_data
 
 
 def evaluate(model_setting, dataset, data_adapter, metrics,
-    batch_size=1, collate_fn=collate_passthrough):
+    batch_size=1, collate_fn=collate_passthrough, manual_seed=None):
+    if manual_seed:
+        assert isinstance(manual_seed, int)
+        set_seed(manual_seed)
     from torch.utils.data import DataLoader
     dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=batch_size)
     running_metrics = defaultdict(float)

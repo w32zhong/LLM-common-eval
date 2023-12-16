@@ -11,7 +11,6 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
                                              flash_rotary=True, # rotary embedding w/ flash_attn
                                              fused_dense=True, # operation fusion
                                              trust_remote_code=True)
-streamer = TextStreamer(tokenizer)
 
 # Evaluate
 from datasets import load_dataset
@@ -21,10 +20,11 @@ import llm_common_eval as lce
 
 phi2_settings = {
     "model": model,
-    "max_length": 128,
+    "max_length": 2048,
     "tokenizer": tokenizer,
+    "streamer": None, # TextStreamer(tokenizer),
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
-    "streamer": streamer,
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
     "debug": False
 }
 
@@ -37,5 +37,6 @@ lce.evaluate(phi2_settings, load_dataset("snli")['test'],
     },
     metrics={
         'accuracy': lce.positive_if_output_contain_label
-    }
+    },
+    manual_seed=42
 )
