@@ -14,20 +14,24 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
 from datasets import load_dataset
 import sys
 sys.path.insert(0, '.')
-from llm_common_eval import *
+import llm_common_eval as lce
 
 phi2_settings = {
     "model": model,
     "max_length": 128,
     "tokenizer": tokenizer,
-    "inference_fn": inference_phi2_1batch,
+    "inference_fn": lce.phi2_model.hgf_inference_1batch,
     "debug": False
 }
 
-evaluate(phi2_settings, load_dataset("snli")['test'],
-    ds_adapter=lambda j: (
-        prompt_phi2_QA(question_NLI_0shot(j['hypothesis'], j['premise'])),
-        str(j['label'])
-    ),
-    score_fn=output_contain_label
+lce.evaluate(phi2_settings, load_dataset("snli")['test'],
+    data_adapter=lambda j: {
+        'input': lce.phi2_model.prompt_QA(
+            lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])
+        ),
+        'label': str(j['label'])
+    },
+    metrics={
+        'accuracy': lce.positive_if_output_contain_label
+    }
 )
