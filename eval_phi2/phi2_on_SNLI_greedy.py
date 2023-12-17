@@ -7,7 +7,7 @@ from transformers import GenerationConfig
 torch.set_default_device("cuda")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
-    torch_dtype=torch.float32, # FP16
+    torch_dtype=torch.float16, # FP16
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
     fused_dense=True, # operation fusion
