@@ -71,6 +71,21 @@ print('=' * 20, 'Report', '=' * 20)
 print(json.dumps(report, indent=2))
 ```
 
+Example output:
+```
+==================== Report ====================
+[
+  {
+    "name": "pass@3",
+    "value": 0.4
+  },
+  {
+    "name": "maj@3",
+    "value": 0.2
+  }
+]
+```
+
 ## Logging
 Logging is necessary to skip already evaluated data rows.
 It also saves computate when re-calculating evaluation metrics if necessary, e.g., if you've introduced a new metric but there is no need to re-generate answers.
