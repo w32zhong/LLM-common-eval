@@ -6,39 +6,45 @@ The code is designed to be minimal but reuseble, it has a good abstraction and d
 ## Quick start
 For example, to evaluate phi-2 model on SNLI:
 ```sh
-python eval_phi2/phi2_on_SNLI.py
+python eval_phi2/phi2_on_SNLI_greedy.py
 ```
 
 ## Code example
 Load a phi-2 model (run this once to save time! E.g., on Google Colab):
 ```py
-# Load model
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-torch.set_default_device("cuda")
+from transformers import TextStreamer
+
+torch.set_default_device("cpu")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
-                                             torch_dtype="auto", # FP16
-                                             flash_attn=True, # flash attention
-                                             flash_rotary=True, # rotary embedding w/ flash_attn
-                                             fused_dense=True, # operation fusion
-                                             device_map="cuda",
-                                             trust_remote_code=True)
-
+    torch_dtype=torch.float32, # FP16
+    flash_attn=True, # flash attention
+    flash_rotary=True, # rotary embedding w/ flash_attn
+    fused_dense=True, # operation fusion
+    trust_remote_code=True
+)
 ```
 
 Create a phi-2 model setting to be evaluated:
 ```py
-import sys
-sys.path.insert(0, '.')
+from transformers import GenerationConfig
 import llm_common_eval as lce
+
+gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
+    do_sample=True,
+    max_new_tokens=12
+)
 
 phi2_settings = {
     "model": model,
-    "max_length": 128,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
-    "debug": False
+    "generation_cfg": gen_config,
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
+        lce.common_stops + lce.double_newline_stops),
+    "streamer": TextStreamer(tokenizer)
 }
 ```
 
@@ -46,19 +52,24 @@ To evaluate this model setting on the SNLI dataset,
 ```py
 from datasets import load_dataset
 
-simple_test_data = load_dataset("snli")['test'].select(range(3))
-
-lce.evaluate(phi2_settings, simple_test_data,
+report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
             lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])
         ),
         'label': str(j['label'])
     },
-    metrics={
-        'accuracy': lce.positive_if_output_contain_label
-    }
+    metrics=[
+        lce.AccuracyPassAnyK('pass@3', judge=lce.if_output_contain_label, n_trials=3),
+        lce.AccuracyMajorityInK('maj@3', judge=lce.if_output_contain_label, n_trials=3)
+    ],
+    log_endpoint='my_cloudflare_r2', # will fallback to filesystem current directory.
+    manual_seed=42
 )
+
+import json
+print('=' * 20, 'Report', '=' * 20)
+print(json.dumps(report, indent=2))
 ```
 
 ## Logging
@@ -83,4 +94,4 @@ lce.evaluate(
     log_endpoint='my_cloudflare_r2'
 )
 ```
-The logging writter will fallback to local "./logs" if the config entry is not found.
+The logger will fallback to local "./logs" directory if the config endpoint is not found.
