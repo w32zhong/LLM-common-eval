@@ -14,7 +14,6 @@ Load a phi-2 model (run this once to save time! E.g., on Google Colab):
 ```py
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import TextStreamer
 
 torch.set_default_device("cpu")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
@@ -29,7 +28,7 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
 
 Create a phi-2 model setting to be evaluated:
 ```py
-from transformers import GenerationConfig
+from transformers import GenerationConfig, TextStreamer
 import llm_common_eval as lce
 
 gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
