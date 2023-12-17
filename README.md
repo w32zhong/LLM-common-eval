@@ -73,6 +73,7 @@ print(json.dumps(report, indent=2))
 
 ## Logging
 Logging is necessary to skip already evaluated data rows.
+It also saves computate when re-calculating evaluation metrics if necessary, e.g., if you've introduced a new metric but there is no need to re-generate answers.
 
 To log to AWS S3 or S3-compatible bucket, create the `~/.aws/credentials` file.
 For example:
