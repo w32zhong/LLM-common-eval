@@ -65,6 +65,21 @@ import os
 import sys
 
 
+# reference interface class
+class LogFS():
+    def listdir(self, path):
+        raise NotImplemented
+
+    def exits(self, path):
+        raise NotImplemented
+
+    def makedir(self, path, recreate=True):
+        raise NotImplemented
+
+    def open(self, path, mode):
+        raise NotImplemented
+
+
 class LocalLogFS(fs.osfs.OSFS):
     def __init__(self, root_path):
         super().__init__(root_path=root_path)
@@ -73,9 +88,9 @@ class LocalLogFS(fs.osfs.OSFS):
         return super().makedir(path, recreate=recreate)
 
 
-class RemoteS3LogFS(s3fs.S3FileSystem):
+class RemoteS3LogFS(LogFS):
     def __init__(self, endpoint_url, bucket):
-        super().__init__(
+        self.fs = s3fs.S3FileSystem(
             client_kwargs=dict(
                 endpoint_url=endpoint_url
             )
@@ -83,7 +98,16 @@ class RemoteS3LogFS(s3fs.S3FileSystem):
         self.bucket = bucket
 
     def listdir(self, path):
-        return self.ls(self.bucket + '/' + path)
+        return self.fs.ls(self.bucket + '/' + path)
+
+    def makedir(self, path, recreate=True):
+        return self.fs.mkdir(self.bucket + '/' + path, create_parents=recreate)
+
+    def open(self, path, mode):
+        return self.fs.open(self.bucket + '/' + path, mode=mode)
+
+    def exists(self, path):
+        return self.fs.exists(self.bucket + '/' + path)
 
 
 def read_s3_credential(path='~/.aws/credentials'):
@@ -113,5 +137,6 @@ def init_logging_prefix(log_fs):
     git_rev = get_git_revision()
     with log_fs.open(f'{script_name}/{timestamp}_{git_rev}.run', 'w') as fh:
         fh.write(get_git_diff())
+        fh.flush()
 
     return script_name

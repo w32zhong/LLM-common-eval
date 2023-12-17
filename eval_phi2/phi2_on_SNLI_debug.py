@@ -46,7 +46,7 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'].select(range(5
         lce.AccuracyPassAnyK('pass@3', judge=lce.if_output_contain_label, n_trials=3),
         lce.AccuracyMajorityInK('maj@3', judge=lce.if_output_contain_label, n_trials=3)
     ],
-    log_endpoint='2my_cloudflare_r2', # will fallback to filesystem current directory.
+    log_endpoint='my_cloudflare_r2', # will fallback to filesystem current directory.
     manual_seed=42
 )
 
