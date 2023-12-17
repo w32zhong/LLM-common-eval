@@ -60,3 +60,27 @@ lce.evaluate(phi2_settings, simple_test_data,
     }
 )
 ```
+
+## Logging
+Logging is necessary to skip already evaluated data rows.
+
+To log to AWS S3 or S3-compatible bucket, create the `~/.aws/credentials` file.
+For example:
+```ini
+[default]
+aws_access_key_id=<your key>
+aws_secret_access_key=<your secret>
+
+[my_cloudflare_r2]
+bucket=llm-common-eval
+endpoint_url=https://foobarbaz.r2.cloudflarestorage.com
+```
+
+And then pass `log_endpoint` to `evaluate()`:
+```py
+lce.evaluate(
+    ...
+    log_endpoint='my_cloudflare_r2'
+)
+```
+The logging writter will fallback to local "./logs" if the config entry is not found.

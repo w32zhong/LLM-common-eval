@@ -1,7 +1,10 @@
+import json
 from collections import defaultdict
+from .utils import setup_endpoint, init_logging_prefix
 
 
 def set_seed(seed):
+    if seed is None: return
     import torch
     import random
     import numpy as np
@@ -22,30 +25,59 @@ def collate_passthrough(batch_data):
 
 
 def evaluate(model_setting, dataset, data_adapter, metrics,
-    batch_size=1, collate_fn=collate_passthrough, manual_seed=None):
-    if manual_seed:
-        assert isinstance(manual_seed, int)
-        set_seed(manual_seed)
+    batch_size=1, collate_fn=collate_passthrough,
+    manual_seed=None, log_endpoint=None):
+    # initialize
+    n_trials = max([m.n_trials for m in metrics])
+    set_seed(manual_seed)
+    log_fs = setup_endpoint(log_endpoint)
+    prefix = init_logging_prefix(log_fs)
+    print('[listdir]', log_fs.listdir('/'))
+    # data loader
     from torch.utils.data import DataLoader
-    dataloader = DataLoader(dataset, collate_fn=collate_fn, batch_size=batch_size)
-    running_metrics = defaultdict(float)
-    count = 0
+    dataloader = DataLoader(dataset,
+        collate_fn=collate_fn, batch_size=batch_size)
+    N = len(dataset)
+    # run through data
     for i, batch_data in enumerate(dataloader):
-        print(f'[Evaluating] {i * batch_size} / {len(dataset)}')
+        row_base = i * batch_size
+        # test whether to skip by looking at the .touch file
+        log_path = f'{prefix}/{n_trials}trial-row{row_base}'
+        skip_this_batch = False
+        if log_fs.exists(f'{log_path}.touch'):
+            print(f'[Skipping] {log_path} + {batch_size} / {N}')
+            skip_this_batch = True
+        else:
+            with log_fs.open(f'{log_path}.touch', 'w') as fh:
+                fh.flush()
+        # perform inference trials
         adapt_batch = [data_adapter(x) for x in batch_data]
-        inferrence_args = model_setting.copy()
-        inferrence_args.pop('inference_fn')
-        inp_batch = list(map(lambda x: x['input'], adapt_batch))
-        out_batch = model_setting['inference_fn'](inp_batch, **inferrence_args)
+        input_batch = list(map(lambda x: x['input'], adapt_batch))
         label_batch = map(lambda x: x['label'], adapt_batch)
-        for metric, metric_fn in metrics.items():
-            for inp, out, label in zip(inp_batch, out_batch, label_batch):
-                judge = float(metric_fn(inp, out, label))
-                running_metrics[metric] += judge
-                print('[Input]', inp)
-                print('[Output]', out)
-                print(f'[Judge] label: {label}, {metric}: {judge}')
-                count += 1.0
-            val = running_metrics[metric]
-            print(f'[Metrics] {metric}: {val} / {count} = {val / count:.3f}%')
-    return running_metrics
+        out_trials_batch = [[] for _ in input_batch]
+        # only if the previous step is not skipped
+        if not skip_this_batch:
+            for t in range(n_trials):
+                print(f'[Trial#{t+1}] {log_path} + {batch_size} / {N}')
+                args = model_setting.copy()
+                args.pop('inference_fn')
+                outputs = model_setting['inference_fn'](input_batch, **args)
+                for b, output in enumerate(outputs):
+                    out_trials_batch[b].append(output)
+            for b, (inp, outs, label) in enumerate(
+                zip(input_batch, out_trials_batch, label_batch)):
+                row = row_base + b
+                log_path = f'{prefix}/{n_trials}trial-row{row}'
+                log = {"input": inp, "output_trials": outs, "label": label}
+                with log_fs.open(f'{log_path}.json', 'w') as fh:
+                    json.dump(log, fh, indent=2)
+                    fh.flush()
+        # read back json and evaluate
+        for row in range(row_base, row_base + batch_size):
+            log_path = f'{prefix}/{n_trials}trial-row{row}'
+            with log_fs.open(f'{log_path}.json', 'r') as fh:
+                log = json.load(fh)
+                print('[Log]', log_path, json.dumps(log, indent=2))
+            for metric in metrics:
+                metric.add_json_sample(log)
+    return list(metric.report() for metric in metrics)

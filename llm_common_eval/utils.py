@@ -1,3 +1,6 @@
+####################
+# stop criteria list
+####################
 from transformers import StoppingCriteria
 from transformers import StoppingCriteriaList
 
@@ -27,3 +30,88 @@ class KeywordsStopper(StoppingCriteria):
         return StoppingCriteriaList([
             KeywordsStopper(tokenizer, keywords)
         ])
+
+
+####################
+# git information
+####################
+import os
+import subprocess
+
+
+def get_git_revision():
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    return subprocess.check_output(
+        ['git', 'rev-parse', 'HEAD'], cwd=dirname
+    ).decode('ascii').strip()
+
+
+def get_git_diff():
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    return subprocess.check_output(
+        ['git', 'diff', 'HEAD'], cwd=dirname
+    ).decode('utf-8').strip()
+
+
+###################
+# logging endpoint
+###################
+import configparser
+import fs.osfs
+import s3fs
+from datetime import datetime
+import re
+import os
+import sys
+
+
+class LocalLogFS(fs.osfs.OSFS):
+    def __init__(self, root_path):
+        super().__init__(root_path=root_path)
+
+    def makedir(self, path, recreate=True):
+        return super().makedir(path, recreate=recreate)
+
+
+class RemoteS3LogFS(s3fs.S3FileSystem):
+    def __init__(self, endpoint_url, bucket):
+        super().__init__(
+            client_kwargs=dict(
+                endpoint_url=endpoint_url
+            )
+        )
+        self.bucket = bucket
+
+    def listdir(self, path):
+        return self.ls(self.bucket + '/' + path)
+
+
+def read_s3_credential(path='~/.aws/credentials'):
+    cfg = configparser.ConfigParser(allow_no_value=True)
+    cfg.read(os.path.expanduser(path))
+    return cfg # return empty list if it does not exists
+
+
+def setup_endpoint(endpoint):
+    cfg = read_s3_credential()
+    if endpoint in cfg:
+        bucket = cfg[endpoint]['bucket']
+        endpoint_url = cfg[endpoint]['endpoint_url']
+        fs = RemoteS3LogFS(endpoint_url, bucket)
+    else:
+        print('Warnining: Cloud not find endpoint, use local logging.')
+        fs = LocalLogFS('./logs')
+    return fs
+
+
+def init_logging_prefix(log_fs):
+    script_name = os.path.basename(sys.argv[0])
+    script_name = re.sub(r'\.py$', '', script_name)
+    log_fs.makedir(script_name)
+
+    timestamp = f'{datetime.now():%Y-%m-%d_%H:%M:%S%z}'
+    git_rev = get_git_revision()
+    with log_fs.open(f'{script_name}/{timestamp}_{git_rev}.run', 'w') as fh:
+        fh.write(get_git_diff())
+
+    return script_name
