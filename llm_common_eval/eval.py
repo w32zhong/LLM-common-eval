@@ -87,4 +87,5 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                 print('[Log]', log_path, json.dumps(log, indent=2))
             for metric in metrics:
                 metric.add_json_sample(log)
+                print('[Running metric]', metric.report())
     return list(metric.report() for metric in metrics)
