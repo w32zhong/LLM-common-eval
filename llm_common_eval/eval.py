@@ -1,4 +1,5 @@
 import json
+from json.decoder import JSONDecodeError
 from collections import defaultdict
 from .utils import setup_endpoint, init_logging_prefix
 
@@ -41,14 +42,15 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
     # run through data
     for i, batch_data in enumerate(dataloader):
         row_base = i * batch_size
-        # test whether to skip by looking at the .touch file
+        # test whether to skip by looking at the log file
         log_path = f'{prefix}/{n_trials}trial-row{row_base}'
         skip_this_batch = False
-        if log_fs.exists(f'{log_path}.touch'):
+        if log_fs.exists(f'{log_path}.json'):
             print(f'[Skipping] {log_path} + {batch_size} / {N}')
             skip_this_batch = True
         else:
-            with log_fs.open(f'{log_path}.touch', 'w') as fh:
+            # touch a file to flag the work is being done
+            with log_fs.open(f'{log_path}.json', 'w') as fh:
                 fh.flush()
         # perform inference trials
         adapt_batch = [data_adapter(x) for x in batch_data]
@@ -76,7 +78,12 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
         for row in range(row_base, row_base + batch_size):
             log_path = f'{prefix}/{n_trials}trial-row{row}'
             with log_fs.open(f'{log_path}.json', 'r') as fh:
-                log = json.load(fh)
+                try:
+                    log = json.load(fh)
+                except JSONDecodeError:
+                    # Multiple evaluation scripts are running?
+                    print('[Empty log] Be sure to re-run evaluation!')
+                    break
                 print('[Log]', log_path, json.dumps(log, indent=2))
             for metric in metrics:
                 metric.add_json_sample(log)
