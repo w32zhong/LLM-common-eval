@@ -18,7 +18,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 torch.set_default_device("cpu")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
-    torch_dtype=torch.float32, # FP16
+    torch_dtype=torch.float32, # only FP32 is supported for CPU
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
     fused_dense=True, # operation fusion
