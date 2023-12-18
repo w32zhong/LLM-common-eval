@@ -1,4 +1,58 @@
-#log = {"input": inp, "output_trials": outs, "label": label}
+import statistics
+import itertools
+
+
+class TokenStats():
+    def __init__(self, name):
+        self.name = name
+        self.samples = []
+        self.n_trials = 1
+
+    def add_json_sample(self, j):
+        inp_tokens = j['input_tokens']
+        out_tokens = [
+            output["out_tokens"]
+            for output in j['output_trials']
+        ]
+        time_costs = [
+            float(output["time_cost"])
+            for output in j['output_trials']
+        ]
+        self.samples.append((inp_tokens, out_tokens, time_costs))
+
+    def avg_trials(self, trials, val_fn):
+        return statistics.mean(val_fn(x) for x in trials)
+
+    def stats(self, name, samples):
+        return {
+            f'avg {name}': statistics.mean(samples),
+            f'median {name}': statistics.median(samples),
+            f'max {name}': max(samples),
+            f'min {name}': min(samples),
+            f'sum {name}': sum(samples)
+        }
+
+    def report(self):
+        inp_tokens_stats = self.stats(
+            'input tokens',
+            [len(s[0]) for s in self.samples]
+        )
+        out_tokens_stats = self.stats(
+            'output tokens',
+            [self.avg_trials(s[1], len) for s in self.samples]
+        )
+        time_costs_stats = self.stats(
+            'time cost',
+            [self.avg_trials(s[2], float) for s in self.samples]
+        )
+        time_cost_per_token = \
+            out_tokens_stats['sum output tokens'] / time_costs_stats['sum time cost']
+        return dict(name=self.name,
+            **inp_tokens_stats,
+            **out_tokens_stats,
+            **time_costs_stats,
+            time_cost_per_token=time_cost_per_token
+        )
 
 
 class Accuracy():
@@ -12,11 +66,11 @@ class Accuracy():
     def add_json_sample(self, j):
         assert len(j['output_trials']) >= self.n_trials
         res_trials = [
-            bool(self.judge(j['input'], output, j['label']))
+            bool(self.judge(j['input'], output["out_text"], j['label']))
             for output in j['output_trials'][:self.n_trials]
         ]
         self.samples.append(res_trials)
-        return self.vote(res_trials)
+        self.vote(res_trials)
 
     def vote(self, res_trials):
         raise NotImplemented
