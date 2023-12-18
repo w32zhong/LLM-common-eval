@@ -7,10 +7,10 @@ The code is designed to be minimal but reuseble, it has a good abstraction and d
 For example, to evaluate phi-2 model on SNLI:
 ```sh
 pip install -r requirements.txt
-python eval_phi2/phi2_on_SNLI_greedy.py
+python eval_phi2/phi2_on_SNLI_demo.py
 ```
 
-On Google Colab or Kaggle:
+Alternatively, on Google Colab or Kaggle:
 ```sh
 ! ls LLM-common-eval || git clone --depth 1 https://github.com/w32zhong/LLM-common-eval.git
 %cd LLM-common-eval
@@ -19,7 +19,7 @@ On Google Colab or Kaggle:
 %env PYTHONPATH=.
 %env CUBLAS_WORKSPACE_CONFIG=:4096:8
 ```
-and copy code from `phi2_on_SNLI_greedy.py` to Colab.
+and copy code from, e.g., `eval_phi2/phi2_on_SNLI_greedy_0shot.py` to Colab.
 
 ## Code example
 Load a phi-2 model (run this once to save time! E.g., on Google Colab):
@@ -144,7 +144,7 @@ Example code:
 ```py
 lce.evaluate(
     ...
-    run_name='phi2_on_SNLI_greedy',
+    run_name='phi2_on_SNLI_greedy_0shot',
     skip_until=5000,
     slow_mode=True
 )
