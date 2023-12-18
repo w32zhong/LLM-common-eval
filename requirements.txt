@@ -1,3 +1,5 @@
 einops
 s3fs
 fs
+accelerate
+datasets
