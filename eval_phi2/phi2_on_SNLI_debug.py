@@ -48,6 +48,8 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'].select(range(5
     ],
     log_endpoint='_my_cloudflare_r2', # will fallback to filesystem current directory.
     manual_seed=42,
+    run_name="debug",
+    skip_until=0,
     slow_mode=True
 )
 

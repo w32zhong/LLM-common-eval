@@ -4,14 +4,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import TextStreamer
 from transformers import GenerationConfig
 
-torch.set_default_device("cuda")
+torch.set_default_device("gpu")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
-    torch_dtype=torch.float16, # FP16
+    torch_dtype=torch.float16,
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
     fused_dense=True, # operation fusion
-    device_map="cuda",
+    #device_map="cuda",
     trust_remote_code=True
 )
 gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
@@ -43,10 +43,14 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
         'label': str(j['label'])
     },
     metrics=[
-        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label, n_trials=1)
+        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label, n_trials=1),
+        lce.TokenStats('token stats')
     ],
     log_endpoint='my_cloudflare_r2', # will fallback to filesystem current directory.
-    manual_seed=42 # no need for greedy generation, but keep here for demonstration.
+    manual_seed=42, # no need for greedy generation, but keep here for demonstration.
+    run_name=None,
+    skip_until=0,
+    slow_mode=False
 )
 
 import json
