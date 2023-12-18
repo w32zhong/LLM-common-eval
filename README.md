@@ -54,7 +54,7 @@ phi2_settings = {
     "generation_cfg": gen_config,
     "stoplist": lce.KeywordsStopper.make_list(tokenizer,
         lce.common_stops + lce.double_newline_stops),
-    "streamer": TextStreamer(tokenizer)
+    "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
 }
 ```
 
