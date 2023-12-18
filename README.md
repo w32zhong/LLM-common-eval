@@ -114,7 +114,15 @@ bucket=llm-common-eval
 endpoint_url=https://foobarbaz.r2.cloudflarestorage.com
 ```
 
-And then pass `log_endpoint` to `evaluate()`:
+(Optionally) install aws-cli to test if your S3 bucket is working: 
+```sh
+python -m pip install awscli
+aws s3 ls "s3://llm-common-eval/" --endpoint-url <endpoint>
+# HANDY: to delete unwanted log files:
+aws s3 rm "s3://llm-common-eval/ipykernel_launcher" --endpoint-url <endpoint> --recursive
+```
+
+If everything is working, pass `log_endpoint` to `evaluate()`:
 ```py
 lce.evaluate(
     ...
