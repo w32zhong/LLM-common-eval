@@ -79,7 +79,6 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                     else:
                         skip_infer_this_batch = True
             else:
-                print(f'[Skipping] {log_path} + {batch_size} / {N}')
                 skip_infer_this_batch = True
         else:
             # touch a file to flag the work is being done
@@ -94,7 +93,10 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
             with log_fs.open(f'{log_path}.json', 'w') as fh:
                 json.dump(log, fh, indent=2)
                 fh.flush()
-        if not skip_infer_this_batch:
+        if skip_infer_this_batch:
+            print(f'[Inference skipped] {log_path} + {batch_size} / {N}')
+        else:
+            print(f'[Inference] {log_path} + {batch_size} / {N}')
             do_inference_trials(model_setting, adapt_batch, n_trials, logger)
         # evaluate
         for row in range(row_base, row_base + batch_size):
@@ -111,7 +113,7 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                         # Multiple evaluation scripts are running?
                         print('[Empty log] Be sure to re-run evaluation!')
                         break
-            print('[Log]', log_path, json.dumps(log, indent=2))
+            print('[Evaluating]', log_path, json.dumps(log, indent=2))
             for metric in metrics:
                 metric.add_json_sample(log)
                 print('[Running metric]', metric.report())
