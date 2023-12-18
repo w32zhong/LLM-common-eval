@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import TextStreamer
 from transformers import GenerationConfig
 
-torch.set_default_device("gpu")
+torch.set_default_device("cuda")
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
     torch_dtype=torch.float16,
