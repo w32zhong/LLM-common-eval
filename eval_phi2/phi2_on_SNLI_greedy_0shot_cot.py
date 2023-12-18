@@ -16,7 +16,7 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
 )
 gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
     do_sample=False,
-    max_new_tokens=128
+    max_new_tokens=2048
 )
 
 # Evaluate
@@ -30,15 +30,14 @@ phi2_settings = {
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
     "generation_cfg": gen_config,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
-        lce.common_stops + lce.double_newline_stops),
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
     "streamer": None # TextStreamer(tokenizer)
 }
 
 report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
-            lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])
+            lce.NLI_task.Qv1_0shot_cot(j['hypothesis'], j['premise'])
         ),
         'label': str(j['label'])
     },
