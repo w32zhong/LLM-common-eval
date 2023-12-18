@@ -14,6 +14,7 @@ On Google Colab or Kaggle:
 ```sh
 ! ls LLM-common-eval || git clone --depth 1 https://github.com/w32zhong/LLM-common-eval.git
 %cd LLM-common-eval
+! git pull
 ! pip install -r requirements.txt
 %env PYTHONPATH=.
 %env CUBLAS_WORKSPACE_CONFIG=:4096:8
