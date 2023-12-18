@@ -26,7 +26,7 @@ def collate_passthrough(batch_data):
 
 
 def evaluate(model_setting, dataset, data_adapter, metrics,
-    batch_size=1, collate_fn=collate_passthrough,
+    batch_size=1, collate_fn=collate_passthrough, skip_until=0,
     manual_seed=None, log_endpoint=None):
     # initialize
     n_trials = max([m.n_trials for m in metrics])
@@ -44,10 +44,12 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
         row_base = i * batch_size
         # test whether to skip by looking at the log file
         log_path = f'{prefix}/{n_trials}trial-row{row_base}'
-        skip_this_batch = False
-        if log_fs.exists(f'{log_path}.json'):
+        skip_infer_this_batch = False
+        if row_base < skip_until:
+            continue
+        elif log_fs.exists(f'{log_path}.json'):
             print(f'[Skipping] {log_path} + {batch_size} / {N}')
-            skip_this_batch = True
+            skip_infer_this_batch = True
         else:
             # touch a file to flag the work is being done
             with log_fs.open(f'{log_path}.json', 'w') as fh:
@@ -58,7 +60,7 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
         label_batch = map(lambda x: x['label'], adapt_batch)
         out_trials_batch = [[] for _ in input_batch]
         # only if the previous step is not skipped
-        if not skip_this_batch:
+        if not skip_infer_this_batch:
             for t in range(n_trials):
                 print(f'[Trial#{t+1}] {log_path} + {batch_size} / {N}')
                 args = model_setting.copy()
