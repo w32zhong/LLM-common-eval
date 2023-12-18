@@ -53,9 +53,9 @@ def get_git_diff():
     ).decode('utf-8').strip()
 
 
-###################
-# logging endpoint
-###################
+#####################
+# logging filesystem
+#####################
 import configparser
 import fs.osfs
 import s3fs
@@ -110,6 +110,9 @@ class RemoteS3LogFS(LogFS):
         return self.fs.exists(self.bucket + '/' + path)
 
 
+###################
+# logging endpoint
+###################
 def read_s3_credential(path='~/.aws/credentials'):
     cfg = configparser.ConfigParser(allow_no_value=True)
     cfg.read(os.path.expanduser(path))
@@ -140,3 +143,18 @@ def init_logging_prefix(log_fs, script_path):
         fh.flush()
 
     return script_name
+
+
+#####################
+# nested dict filter
+#####################
+def filterout_dict_by_key(d, pattern):
+    if isinstance(d, dict):
+        return {
+            k: filterout_dict_by_key(v, pattern)
+            for k, v in d.items() if not re.match(pattern, k)
+        }
+    elif isinstance(d, list):
+        return [filterout_dict_by_key(item, pattern) for item in d]
+    else:
+        return d

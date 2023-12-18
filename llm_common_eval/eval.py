@@ -1,8 +1,10 @@
 import sys
 import json
+import time
+import platform
 from json.decoder import JSONDecodeError
 from collections import defaultdict
-from .utils import setup_endpoint, init_logging_prefix
+from .utils import setup_endpoint, init_logging_prefix, filterout_dict_by_key
 
 
 def set_seed(seed):
@@ -30,16 +32,30 @@ def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
     input_batch = list(map(lambda x: x['input'], adapt_batch))
     label_batch = map(lambda x: x['label'], adapt_batch)
     out_trials_batch = [[] for _ in input_batch]
+    inp_tokens = None
     for t in range(n_trials):
         print(f'[Inference trial#{t+1}]')
         args = model_setting.copy()
         args.pop('inference_fn')
-        outputs = model_setting['inference_fn'](input_batch, **args)
-        for b, output in enumerate(outputs):
-            out_trials_batch[b].append(output)
+        time_begin = time.time()
+        inp_tokens, outputs = model_setting['inference_fn'](input_batch, **args)
+        time_end = time.time()
+        for b, (out_text, out_tokens) in enumerate(outputs):
+            timecost = time_end - time_begin
+            out_trials_batch[b].append({
+                "out_text": out_text,
+                "out_tokens": out_tokens,
+                "time_cost": timecost
+            })
     for b, (inp, outs, label) in enumerate(
         zip(input_batch, out_trials_batch, label_batch)):
-        log = {"input": inp, "output_trials": outs, "label": label}
+        log = {
+            "exe_node": platform.node(),
+            "input": inp,
+            "input_tokens": inp_tokens,
+            "output_trials": outs,
+            "label": label
+        }
         logger(b, log)
 
 
@@ -113,7 +129,8 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                         # Multiple evaluation scripts are running?
                         print('[Empty log] Be sure to re-run evaluation!')
                         break
-            print('[Evaluating]', log_path, json.dumps(log, indent=2))
+            display_log = filterout_dict_by_key(log, r"(.*)_tokens$")
+            print('[Evaluating]', log_path, json.dumps(display_log, indent=2))
             for metric in metrics:
                 metric.add_json_sample(log)
                 print('[Running metric]', metric.report())
