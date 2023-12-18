@@ -128,8 +128,8 @@ def setup_endpoint(endpoint):
     return fs
 
 
-def init_logging_prefix(log_fs):
-    script_name = os.path.basename(sys.argv[0])
+def init_logging_prefix(log_fs, script_path):
+    script_name = os.path.basename(script_path)
     script_name = re.sub(r'\.py$', '', script_name)
     log_fs.makedir(script_name)
 
