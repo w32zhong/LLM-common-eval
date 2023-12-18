@@ -32,7 +32,7 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
     n_trials = max([m.n_trials for m in metrics])
     set_seed(manual_seed)
     log_fs = setup_endpoint(log_endpoint)
-    if overwrite_name: # useful in Colab
+    if use_script_name: # useful in Colab
         prefix = init_logging_prefix(log_fs, use_script_name)
     else:
         prefix = init_logging_prefix(log_fs, sys.argv[0])
