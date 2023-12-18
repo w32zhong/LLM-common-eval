@@ -34,7 +34,6 @@ phi2_settings = {
     "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
 }
 
-#report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
 report = lce.evaluate(phi2_settings, load_dataset("snli")['test'].select(range(5)),
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
@@ -47,7 +46,8 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'].select(range(5
         lce.AccuracyMajorityInK('maj@3', judge=lce.if_output_contain_label, n_trials=3)
     ],
     log_endpoint='_my_cloudflare_r2', # will fallback to filesystem current directory.
-    manual_seed=42
+    manual_seed=42,
+    slow_mode=True
 )
 
 import json

@@ -133,15 +133,19 @@ The logger will fallback to local "./logs" directory if the config endpoint is n
 
 ## Useful evaluation options
 In Colab environment, the script running is named `ipykernel_launcher.py` by default.
-You have to pass the `use_script_name` to overwrite the script name which determines the log root directory.
+You have to pass the `run_name` to overwrite the script name which determines the log root directory.
 
 In addition, to reduce S3 API usage, use the `skip_until=n` to completely skip the first `n` data rows.
 
-Example:
+Finally, pass in `slow_mode=True` to avoid any row to be skipped when an empty log file is presented.
+This is useful to finish a final-round complete evaluation, otherwise some evaluation may be skipped for the sake of efficiency in parallel executions.
+
+Example code:
 ```py
 lce.evaluate(
     ...
-    use_script_name='phi2_on_SNLI_greedy',
-    skip_until=5000
+    run_name='phi2_on_SNLI_greedy',
+    skip_until=5000,
+    slow_mode=True
 )
 ```
