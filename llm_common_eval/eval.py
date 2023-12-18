@@ -27,13 +27,13 @@ def collate_passthrough(batch_data):
 
 def evaluate(model_setting, dataset, data_adapter, metrics,
     batch_size=1, collate_fn=collate_passthrough, skip_until=0,
-    manual_seed=None, log_endpoint=None, overwrite_name=None):
+    manual_seed=None, log_endpoint=None, use_script_name=None):
     # initialize
     n_trials = max([m.n_trials for m in metrics])
     set_seed(manual_seed)
     log_fs = setup_endpoint(log_endpoint)
     if overwrite_name: # useful in Colab
-        prefix = init_logging_prefix(log_fs, overwrite_name)
+        prefix = init_logging_prefix(log_fs, use_script_name)
     else:
         prefix = init_logging_prefix(log_fs, sys.argv[0])
     print('[listdir root]', log_fs.listdir('/'))
