@@ -45,8 +45,8 @@ class TokenStats():
             'time cost',
             [self.avg_trials(s[2], float) for s in self.samples]
         )
-        time_cost_per_token = \
-            out_tokens_stats['sum output tokens'] / time_costs_stats['sum time cost']
+        time_cost_per_token = (time_costs_stats['sum time cost']
+            / out_tokens_stats['sum output tokens'])
         return dict(name=self.name,
             **inp_tokens_stats,
             **out_tokens_stats,
