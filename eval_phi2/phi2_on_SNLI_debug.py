@@ -43,7 +43,8 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'].select(range(5
     },
     metrics=[
         lce.AccuracyPassAnyK('pass@3', judge=lce.if_output_contain_label, n_trials=3),
-        lce.AccuracyMajorityInK('maj@3', judge=lce.if_output_contain_label, n_trials=3)
+        lce.AccuracyMajorityInK('maj@3', judge=lce.if_output_contain_label, n_trials=3),
+        lce.TokenStats('token stats')
     ],
     log_endpoint='_my_cloudflare_r2', # will fallback to filesystem current directory.
     manual_seed=42,
