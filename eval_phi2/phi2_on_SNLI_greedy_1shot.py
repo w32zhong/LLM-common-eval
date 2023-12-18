@@ -34,10 +34,13 @@ phi2_settings = {
     "streamer": None # TextStreamer(tokenizer)
 }
 
-report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
+ds = load_dataset("snli")
+support_set = lce.generate_support_set(ds['train'], label, k_shots=1)
+
+report = lce.evaluate(phi2_settings, ds['test'],
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
-            lce.NLI_task.Qv1_0shot_cot(j['hypothesis'], j['premise'])
+            lce.NLI_task.Qv1_fewshot(j['hypothesis'], j['premise'], support_set)
         ),
         'label': str(j['label'])
     },

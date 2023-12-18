@@ -158,3 +158,33 @@ def filterout_dict_by_key(d, pattern):
         return [filterout_dict_by_key(item, pattern) for item in d]
     else:
         return d
+
+
+#####################
+# few-shot generator
+#####################
+def dataset_group_by_col(ds, col):
+    groups = {key: [] for key in ds.unique(col)}
+    ds.map(lambda key, i: groups[key].append(i),
+        with_indices=True, input_columns=col)
+    groups = {key: ds.select(indices) for key, indices in groups.items()}
+    return groups
+
+
+def generate_support_set(ds, col, k_shots=3):
+    groups = dataset_group_by_col(dataset, col)
+    min_group_size = min(len(groups[k]) for k in groups.keys())
+    assert min_group_size >= k_shots, "Please feed in more data!"
+    iters = [
+        iter(groups[uniq_label]) for uniq_label in sorted(ds.unique(col))
+    ]
+    support_set = []
+    n_way = len(groups.keys())
+    support_size = n_way * k_shots
+    while True:
+        for ds_iter in iters:
+            support_set.append(next(ds_iter))
+        if len(support_set) >= support_size:
+            support_set = support_set[:support_size]
+            break
+    return support_set
