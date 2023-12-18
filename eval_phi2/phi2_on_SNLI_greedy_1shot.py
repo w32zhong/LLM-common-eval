@@ -16,7 +16,7 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
 )
 gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
     do_sample=False,
-    max_new_tokens=12
+    max_new_tokens=128
 )
 
 # Evaluate
