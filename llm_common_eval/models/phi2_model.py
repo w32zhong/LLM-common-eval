@@ -17,4 +17,6 @@ def hgf_inference_1batch(inp_data, model=None, tokenizer=None,
     if debug: print(tokenizer.decode(res_tokens[0]))
     out_tokens = res_tokens[0][inp_length:]
     out_text = tokenizer.decode(out_tokens)
-    return inp_tokens.tolist(), [(out_text, out_tokens.tolist())]
+    return inp_tokens.tolist(), [
+        dict(out_text=out_text, out_tokens=out_tokens.tolist())
+    ]

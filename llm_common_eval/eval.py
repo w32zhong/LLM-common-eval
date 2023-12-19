@@ -40,13 +40,10 @@ def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
         time_begin = time.time()
         inp_tokens, outputs = model_setting['inference_fn'](input_batch, **args)
         time_end = time.time()
-        for b, (out_text, out_tokens) in enumerate(outputs):
-            timecost = time_end - time_begin
-            out_trials_batch[b].append({
-                "out_text": out_text,
-                "out_tokens": out_tokens,
-                "time_cost": timecost
-            })
+        for b, out in enumerate(outputs):
+            time_cost = time_end - time_begin
+            out["time_cost"] = time_cost
+            out_trials_batch[b].append(out)
     for b, (inp, outs, label) in enumerate(
         zip(input_batch, out_trials_batch, label_batch)):
         log = {
