@@ -172,7 +172,7 @@ def dataset_group_by_col(ds, col):
 
 
 def generate_support_set(ds, col, k_shots=3):
-    groups = dataset_group_by_col(dataset, col)
+    groups = dataset_group_by_col(ds, col)
     min_group_size = min(len(groups[k]) for k in groups.keys())
     assert min_group_size >= k_shots, "Please feed in more data!"
     iters = [
