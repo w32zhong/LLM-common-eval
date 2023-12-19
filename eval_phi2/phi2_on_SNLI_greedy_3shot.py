@@ -1,12 +1,11 @@
-# Load model
+# Load
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import TextStreamer
 from transformers import GenerationConfig
-
+from transformers import TextStreamer
+hgf_repo = "microsoft/phi-2"
 torch.set_default_device("cuda")
-tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
+model = AutoModelForCausalLM.from_pretrained(hgf_repo,
     torch_dtype=torch.float16,
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
@@ -14,33 +13,42 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
     #device_map="cuda",
     trust_remote_code=True
 )
-gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
-    do_sample=False,
-    max_length=2048
-)
+tokenizer = AutoTokenizer.from_pretrained(hgf_repo, trust_remote_code=True)
+genconfig = GenerationConfig.from_pretrained(hgf_repo)
 
-# Evaluate
-from datasets import load_dataset
+# Set
 import sys
 sys.path.insert(0, '.')
 import llm_common_eval as lce
-
+genconfig.update(
+    do_sample=False,
+    max_length=2048
+)
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
-    "generation_cfg": gen_config,
+    "generation_cfg": genconfig,
     "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
-    "streamer": None # TextStreamer(tokenizer)
+    "streamer": None
 }
 
+# Evaluate
+from datasets import load_dataset
 ds = load_dataset("snli")
-support_set = lce.generate_support_set(ds['train'], label, k_shots=3)
-
+ds = ds.filter(lambda j: j["label"] != -1)
+support_set = lce.generate_support_set(
+    ds['train'].select(range(8000)),
+    'label',
+    k_shots=3
+)
 report = lce.evaluate(phi2_settings, ds['test'],
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
-            lce.NLI_task.Qv1_fewshot(j['hypothesis'], j['premise'], support_set)
+            lce.NLI_task.Qv1_fewshot(
+                j['hypothesis'], j['premise'],
+                [(j['hypothesis'], j['premise'], str(j['label'])) for j in support_set]
+            )
         ),
         'label': str(j['label'])
     },
@@ -55,6 +63,7 @@ report = lce.evaluate(phi2_settings, ds['test'],
     slow_mode=False
 )
 
+# Report
 import json
 print('=' * 20, 'Report', '=' * 20)
 print(json.dumps(report, indent=2))

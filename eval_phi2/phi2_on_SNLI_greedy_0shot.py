@@ -1,12 +1,11 @@
-# Load model
+# Load
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import TextStreamer
 from transformers import GenerationConfig
-
+from transformers import TextStreamer
+hgf_repo = "microsoft/phi-2"
 torch.set_default_device("cuda")
-tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
+model = AutoModelForCausalLM.from_pretrained(hgf_repo,
     torch_dtype=torch.float16,
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
@@ -14,28 +13,31 @@ model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2",
     #device_map="cuda",
     trust_remote_code=True
 )
-gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
-    do_sample=False,
-    max_new_tokens=128
-)
+tokenizer = AutoTokenizer.from_pretrained(hgf_repo, trust_remote_code=True)
+genconfig = GenerationConfig.from_pretrained(hgf_repo)
 
-# Evaluate
-from datasets import load_dataset
+# Set
 import sys
 sys.path.insert(0, '.')
 import llm_common_eval as lce
-
+genconfig.update(
+    do_sample=False,
+    max_length=2048
+)
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
-    "generation_cfg": gen_config,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
-        lce.common_stops + lce.double_newline_stops),
-    "streamer": None # TextStreamer(tokenizer)
+    "generation_cfg": genconfig,
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
+    "streamer": None
 }
 
-report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
+# Evaluate
+from datasets import load_dataset
+ds = load_dataset("snli")
+ds = ds.filter(lambda j: j["label"] != -1)
+report = lce.evaluate(phi2_settings, ds['test'],
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
             lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])
@@ -53,6 +55,7 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
     slow_mode=False
 )
 
+# Report
 import json
 print('=' * 20, 'Report', '=' * 20)
 print(json.dumps(report, indent=2))
