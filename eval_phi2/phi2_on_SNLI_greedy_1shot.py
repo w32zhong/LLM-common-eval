@@ -47,7 +47,7 @@ report = lce.evaluate(phi2_settings, ds['test'],
         'input': lce.phi2_model.prompt_QA(
             lce.NLI_task.Qv1_fewshot(
                 j['hypothesis'], j['premise'],
-                [(j['hypothesis'], j['premise'], str(j['label'])) for j in support_set]
+                [(j['hypothesis'], j['premise'], j['label']) for j in support_set]
             )
         ),
         'label': str(j['label'])
