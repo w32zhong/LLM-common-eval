@@ -25,28 +25,28 @@ class TokenStats():
 
     def stats(self, name, samples):
         return {
-            f'avg {name}': statistics.mean(samples),
-            f'median {name}': statistics.median(samples),
-            f'max {name}': max(samples),
-            f'min {name}': min(samples),
-            f'sum {name}': sum(samples)
+            f'avg_{name}': statistics.mean(samples),
+            f'median_{name}': statistics.median(samples),
+            f'max_{name}': max(samples),
+            f'min_{name}': min(samples),
+            f'sum_{name}': sum(samples)
         }
 
     def report(self):
         inp_tokens_stats = self.stats(
-            'input tokens',
+            'input_tokens',
             [len(s[0]) for s in self.samples]
         )
         out_tokens_stats = self.stats(
-            'output tokens',
+            'output_tokens',
             [self.avg_trials(s[1], len) for s in self.samples]
         )
         time_costs_stats = self.stats(
-            'time cost',
+            'time_cost',
             [self.avg_trials(s[2], float) for s in self.samples]
         )
-        time_cost_per_token = (time_costs_stats['sum time cost']
-            / out_tokens_stats['sum output tokens'])
+        time_cost_per_token = (time_costs_stats['sum_time_cost']
+            / out_tokens_stats['sum_output_tokens'])
         return dict(name=self.name,
             **inp_tokens_stats,
             **out_tokens_stats,
