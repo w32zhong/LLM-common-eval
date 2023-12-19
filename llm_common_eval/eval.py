@@ -1,10 +1,11 @@
+import re
 import sys
 import json
 import time
 import platform
 from json.decoder import JSONDecodeError
 from collections import defaultdict
-from .utils import setup_endpoint, init_logging_prefix, filterout_dict_by_key
+from .utils import setup_endpoint, init_logging_prefix, filter_by_key
 
 
 def set_seed(seed):
@@ -30,7 +31,8 @@ def collate_passthrough(batch_data):
 
 def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
     input_batch = list(map(lambda x: x['input'], adapt_batch))
-    label_batch = map(lambda x: x['label'], adapt_batch)
+    custom_batch = filter_by_key(adapt_batch,
+        lambda k: k not in ['input', '_output_process'])
     out_trials_batch = [[] for _ in input_batch]
     inp_tokens = None
     for t in range(n_trials):
@@ -43,15 +45,19 @@ def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
         for b, out in enumerate(outputs):
             time_cost = time_end - time_begin
             out["time_cost"] = time_cost
-            out_trials_batch[b].append(out)
-    for b, (inp, outs, label) in enumerate(
-        zip(input_batch, out_trials_batch, label_batch)):
+            if '_output_process' in adapt_batch[0]:
+                processed = adapt_batch[0]['_output_process'](out)
+            else:
+                processed = {}
+            out_trials_batch[b].append({**out, **processed})
+    for b, (inp, outs, custom) in enumerate(
+        zip(input_batch, out_trials_batch, custom_batch)):
         log = {
             "exe_node": platform.node(),
             "input": inp,
             "input_tokens": inp_tokens,
             "output_trials": outs,
-            "label": label
+            **custom
         }
         logger(b, log)
 
@@ -126,7 +132,8 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                         # Multiple evaluation scripts are running?
                         print('[Empty log] Be sure to re-run evaluation!')
                         break
-            display_log = filterout_dict_by_key(log, r"(.*)_tokens$")
+            display_log = filter_by_key(log,
+                lambda k: not re.match(r"(.*)_tokens$", k))
             print('[Evaluating]', log_path, json.dumps(display_log, indent=2))
             for metric in metrics:
                 metric.add_json_sample(log)

@@ -1,5 +1,19 @@
+import re
 import statistics
 import itertools
+
+
+class MetricBase():
+    def __init__(self, name):
+        self.name = name
+        self.samples = []
+        self.n_trials = 1
+
+    def add_json_sample(self, j):
+        raise NotImplemented
+
+    def report(self):
+        raise NotImplemented
 
 
 class TokenStats():
@@ -56,28 +70,40 @@ class TokenStats():
 
 
 class Accuracy():
-    def __init__(self, name, judge, n_trials=1):
+    def __init__(self, name, judge, *, n_trials=1, label_key='label'):
         self.name = name
         self.judge = judge
         self.n_trials = n_trials
         self.positives = 0
+        self.label_key = label_key
         self.samples = []
 
     def add_json_sample(self, j):
         assert len(j['output_trials']) >= self.n_trials
         res_trials = [
-            bool(self.judge(j['input'], output["out_text"], j['label']))
+            bool(self.judge(
+                j['input'],
+                output["out_text"],
+                j[self.label_key]
+            ))
             for output in j['output_trials'][:self.n_trials]
         ]
         self.samples.append(res_trials)
         self.vote(res_trials)
 
     def vote(self, res_trials):
-        raise NotImplemented
+        if res_trials[0]:
+            self.positives += 1
 
     def report(self):
-        value = self.positives / float(len(self.samples))
-        return dict(name=self.name, value=value)
+        percent = self.positives / len(self.samples)
+        samples = len(self.samples)
+        positives = self.positives
+        return dict(name=self.name,
+            percent=percent,
+            samples=samples,
+            positives=positives
+        )
 
 
 class AccuracyPassAnyK(Accuracy):
@@ -86,7 +112,7 @@ class AccuracyPassAnyK(Accuracy):
 
     def vote(self, res_trials):
         if any(res_trials):
-            self.positives += 1.0
+            self.positives += 1
 
 
 class AccuracyMajorityInK(Accuracy):
@@ -95,8 +121,15 @@ class AccuracyMajorityInK(Accuracy):
 
     def vote(self, res_trials):
         if sum(res_trials) > (len(res_trials) / 2):
-            self.positives += 1.0
+            self.positives += 1
 
 
 def if_output_contain_label(inp, out, label):
     return label in out
+
+
+def if_output_contain_uncased(uncased_list, inp, out, label):
+    for uncased in uncased_list:
+        if re.search(uncased, out, re.IGNORECASE):
+            return True
+    return False

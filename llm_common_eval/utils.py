@@ -148,14 +148,14 @@ def init_logging_prefix(log_fs, script_path):
 #####################
 # nested dict filter
 #####################
-def filterout_dict_by_key(d, pattern):
+def filter_by_key(d, criteria_fn):
     if isinstance(d, dict):
         return {
-            k: filterout_dict_by_key(v, pattern)
-            for k, v in d.items() if not re.match(pattern, k)
+            k: filter_by_key(v, criteria_fn)
+            for k, v in d.items() if criteria_fn(k)
         }
     elif isinstance(d, list):
-        return [filterout_dict_by_key(item, pattern) for item in d]
+        return [filter_by_key(item, criteria_fn) for item in d]
     else:
         return d
 
@@ -188,3 +188,20 @@ def generate_support_set(ds, col, k_shots=3):
             support_set = support_set[:support_size]
             break
     return support_set
+
+
+#####################
+# assert and return
+#####################
+def assert_and_return(x, assertion):
+    assert assertion
+    return x
+
+
+#####################
+# string processors
+#####################
+def remove_by_list_of_strings(x, alist):
+    for string in alist:
+        x = x.replace(string, '')
+    return x
