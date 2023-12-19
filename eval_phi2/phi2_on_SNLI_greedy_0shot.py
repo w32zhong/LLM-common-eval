@@ -4,9 +4,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import GenerationConfig
 from transformers import TextStreamer
 hgf_repo = "microsoft/phi-2"
-torch.set_default_device("cuda")
+torch.set_default_device("cpu")
 model = AutoModelForCausalLM.from_pretrained(hgf_repo,
-    torch_dtype=torch.float16,
+    torch_dtype=torch.float32,
     flash_attn=True, # flash attention
     flash_rotary=True, # rotary embedding w/ flash_attn
     fused_dense=True, # operation fusion
@@ -22,14 +22,15 @@ sys.path.insert(0, '.')
 import llm_common_eval as lce
 genconfig.update(
     do_sample=False,
-    max_length=2048
+    max_new_tokens=128
 )
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
     "generation_cfg": genconfig,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
+        lce.common_stops + lce.double_newline_stops),
     "streamer": None
 }
 

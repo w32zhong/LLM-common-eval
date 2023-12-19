@@ -22,14 +22,15 @@ sys.path.insert(0, '.')
 import llm_common_eval as lce
 genconfig.update(
     do_sample=False,
-    max_length=2048
+    max_new_tokens=128
 )
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
     "generation_cfg": genconfig,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
+        lce.common_stops + lce.double_newline_stops),
     "streamer": None
 }
 
