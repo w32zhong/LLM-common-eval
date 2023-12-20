@@ -135,7 +135,7 @@ The logger will fallback to local "./logs" directory if the config endpoint is n
 In Colab environment, the script running is named `ipykernel_launcher.py` by default.
 You have to pass the `run_name` to overwrite the script name which determines the log root directory.
 
-In addition, to reduce S3 API usage, use the `skip_until=n` to completely skip the first `n` data rows.
+In addition, to reduce S3 API usage, use the `skip_until=n` to completely skip the first `n` data rows in case you have already evaluated them!
 
 Finally, pass in `slow_mode=True` to avoid any row to be skipped when an empty log file is presented.
 This is useful to finish a final-round complete evaluation, otherwise some evaluation may be skipped for the sake of efficiency in parallel executions.
