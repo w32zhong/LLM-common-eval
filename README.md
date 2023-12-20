@@ -100,7 +100,7 @@ Example output:
 
 ## Logging
 Logging is necessary to skip already evaluated data rows.
-It also saves computate when re-calculating evaluation metrics if necessary, e.g., if you've introduced a new metric but there is no need to re-generate answers.
+It also saves compute when re-calculating evaluation metrics is necessary, e.g., if you've introduced a new metric but there is no need to re-generate answers.
 
 To log to AWS S3 or S3-compatible bucket, create the `~/.aws/credentials` file.
 For example:
