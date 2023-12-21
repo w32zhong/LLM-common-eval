@@ -205,3 +205,13 @@ def remove_by_list_of_strings(x, alist):
     for string in alist:
         x = x.replace(string, '')
     return x
+
+
+############################
+# convert answer to number
+############################
+def truefalse_to_onezero(output):
+    if re.search('true', output, re.IGNORECASE):
+        return 1
+    else:
+        return 0

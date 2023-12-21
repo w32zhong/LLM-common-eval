@@ -36,22 +36,29 @@ phi2_settings = {
 from functools import partial
 from datasets import load_dataset
 SuperGLUE_list = 'boolq cb copa multirc record rte wic wsc'
-SuperGLUE_select = 'record'
+SuperGLUE_select = 'boolq' # change this!
 assert SuperGLUE_select in SuperGLUE_list.split()
 ds = load_dataset("super_glue", SuperGLUE_select)
-SuperGLUE_default_adapter=lambda j: {
+SuperGLUE_default_adapter = lambda j: {
+    'input': lce.phi2_model.prompt_QA(
+        lce.NLU_task.Qv1_BoolQ_0shot(j['passage'], j['question'])
+    ),
+    'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),
+    '_output_process': (lambda o: {
+        'prediction': lce.utils.truefalse_to_onezero(o['out_text'])
+    })
 }
-SuperGLUE_multirc_adapter=lambda j: {
+SuperGLUE_multirc_adapter = lambda j: {
     'input': lce.phi2_model.prompt_QA(
         lce.NLU_task.Qv1_MultiRC_0shot(j['paragraph'], j['question'], j['answer'])
     ),
     'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),
     'idx': j['idx'],
     '_output_process': (lambda o: {
-        'prediction': lce.NLU_task.Qv1_MultiRC_output_process(o['out_text'])
+        'prediction': lce.utils.truefalse_to_onezero(o['out_text'])
     })
 }
-SuperGLUE_record_adapter=lambda j: {
+SuperGLUE_record_adapter = lambda j: {
     'input': lce.phi2_model.prompt_QA(
         lce.NLU_task.Qv1_ReCoRD_0shot(j['passage'], j['query'], j['entities'])
     ),
@@ -64,10 +71,18 @@ SuperGLUE_record_adapter=lambda j: {
     })
 }
 SuperGLUE_adapters = {
+    "boolq": SuperGLUE_default_adapter,
     "multirc": SuperGLUE_multirc_adapter,
     "record": SuperGLUE_record_adapter,
 }
+SuperGLUE_default_metrics = [
+    lce.super_glue.Default_metrics('SuperGLUE metrics', SuperGLUE_select),
+    lce.Accuracy('valid output',
+        judge=partial(lce.if_output_contain_uncased, ['true', 'false'])),
+    lce.TokenStats('token stats')
+]
 SuperGLUE_metrics = {
+    'boolq': SuperGLUE_default_metrics,
     'multirc': [
         lce.metrics.super_glue.MultiRC_metrics('MultiRC metrics'),
         lce.Accuracy('valid output',
