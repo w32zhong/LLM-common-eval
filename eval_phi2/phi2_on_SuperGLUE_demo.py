@@ -23,12 +23,13 @@ genconfig.update(
     do_sample=False,
     max_length=2048
 )
+stop_list = lce.common_stops + lce.newsect_stops
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.phi2_model.hgf_inference_1batch,
     "generation_cfg": genconfig,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer, lce.common_stops),
+    "stoplist": lce.KeywordsStopper.make_list(tokenizer, stop_list),
     "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
 }
 
@@ -90,7 +91,7 @@ SuperGLUE_adapters = {
         'idx': j['idx'],
         '_output_process': (lambda o: {
             'prediction_text': lce.NLU_task.Qv1_ReCoRD_output_process(
-                lce.utils.remove_by_list_of_strings(o['out_text'], lce.common_stops)
+                lce.utils.remove_by_list_of_strings(o['out_text'], stop_list)
             )
         })
     },
