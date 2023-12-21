@@ -218,3 +218,8 @@ def extract_by_list_of_strings(x, alist):
         if string in x:
             return string
     return alist[0]
+
+
+def string_span_wrapper(x, span, wrapper=('[[', ']]')):
+    wrapp_word = x[span[0]:span[1]]
+    return x[:span[0]] + wrapper[0] + wrapp_word + wrapper[1] + x[span[1]:]

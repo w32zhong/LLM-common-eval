@@ -48,3 +48,18 @@ def Qv1_ReCoRD_output_process(output):
         return output.replace('=', ' ')
     else:
         return output
+
+
+def Qv1_WiC_0shot(snippet1, snippet2, word):
+    return f'''Given two text snippets and a polysemous word that appears in both sentences, determine whether the word is used with the same sense in both snippets. Output either "True" or "False" in your response.
+
+## Snippet 1:
+{snippet1}
+
+## Snippet 2:
+{snippet2}
+
+## Question
+Look at the word "{word}" (its position is indicated by wrapping a pair of double square brackets "[[" and "]]" around it), is it used with the same sense in both snippets?
+
+## Response:'''
