@@ -1,5 +1,6 @@
 def main(SuperGLUE_select, log_endpoint='non_exists!', devices="0", runname=None):
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    devices = str(devices) if isinstance(devices, int) else ','.join(map(str, devices))
     os.environ["CUDA_VISIBLE_DEVICES"] = devices
 
     # Load
