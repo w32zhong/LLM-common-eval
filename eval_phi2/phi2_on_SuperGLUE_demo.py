@@ -36,7 +36,7 @@ phi2_settings = {
 from functools import partial
 from datasets import load_dataset
 SuperGLUE_list = 'boolq cb copa multirc record rte wic wsc'
-SuperGLUE_select = 'wic' # change this!
+SuperGLUE_select = 'wsc' # change this!
 assert SuperGLUE_select in SuperGLUE_list.split()
 ds = load_dataset("super_glue", SuperGLUE_select)
 SuperGLUE_adapters = {
@@ -120,6 +120,20 @@ SuperGLUE_adapters = {
             'prediction': lce.utils.truefalse_to_onezero(o['out_text'])
         })
     },
+    "wsc": lambda j: {
+        'input': lce.phi2_model.prompt_QA(
+            lce.NLU_task.Qv1_WSC_0shot(
+                lce.utils.string_spans_wrapper(j['text'], [
+                    (j['span1_index'], j['span1_index'] + len(j['span1_text'])),
+                    (j['span2_index'], j['span2_index'] + len(j['span2_text'])),
+                ])
+            )
+        ),
+        'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),
+        '_output_process': (lambda o: {
+            'prediction': lce.utils.truefalse_to_onezero(o['out_text'])
+        })
+    },
 }
 SuperGLUE_metrics = {
     'boolq': [
@@ -160,6 +174,12 @@ SuperGLUE_metrics = {
     ],
     'wic': [
         lce.super_glue.Default_metrics('Word-in-Context metrics', SuperGLUE_select),
+        lce.Accuracy('valid output',
+            judge=partial(lce.if_output_contain_uncased, ['true', 'false'])),
+        lce.TokenStats('token stats')
+    ],
+    'wsc': [
+        lce.super_glue.Default_metrics('Winograd Schema Challenge metrics', SuperGLUE_select),
         lce.Accuracy('valid output',
             judge=partial(lce.if_output_contain_uncased, ['true', 'false'])),
         lce.TokenStats('token stats')

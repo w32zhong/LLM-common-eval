@@ -63,3 +63,12 @@ def Qv1_WiC_0shot(snippet1, snippet2, word):
 Look at the word "{word}" (its position is indicated by wrapping a pair of double square brackets "[[" and "]]" around it), is it used with the same sense in both snippets?
 
 ## Response:'''
+
+
+def Qv1_WSC_0shot(text):
+    return f'''Given a text snippet where a pair of co-referenced pronoun and noun phrase are highlighted. Their appearance is denoted by wrapping a pair of double square brackets "[[" and "]]" around each. Determine whether the word pair is used with the correct referent. Output either "True" or "False" in your response.
+
+## Text snippet:
+{text}
+
+## Response:'''
