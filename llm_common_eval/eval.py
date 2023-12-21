@@ -140,4 +140,4 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
             for metric in metrics:
                 metric.add_json_sample(log)
                 print('[Running metric]', metric.report())
-    return list(metric.report() for metric in metrics)
+    return dict([(metric.name, metric.report()) for metric in metrics])

@@ -1,3 +1,15 @@
+def Qv1_BoolQ_0shot(passage, question):
+    return f'''Read a passage below, followed by a yes/no question about this passage. Please answer the question, your output should contain either "true" or "false".
+
+## Passage:
+{passage}
+
+## Question:
+{question}
+
+## Response:'''
+
+
 def Qv1_MultiRC_0shot(paragraph, question, answer):
     return f'''Read the paragraph below, followed by a question about this paragraph. For a given answer to the question, you must predict whether the given answer is true or false. Make sure your response contains either the prediction word "true" or "false".
 
@@ -36,15 +48,3 @@ def Qv1_ReCoRD_output_process(output):
         return output.replace('=', ' ')
     else:
         return output
-
-
-def Qv1_BoolQ_0shot(passage, question):
-    return f'''Read a passage below, followed by a yes/no question about this passage. Please answer the question, your output should contain either "true" or "false".
-
-## Passage:
-{passage}
-
-## Question:
-{question}
-
-## Response:'''
