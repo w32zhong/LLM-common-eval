@@ -1,12 +1,11 @@
 #!/bin/bash
 
 detached_experiment() {
-    CONDA_ENV=${1-default_conda_env}
-    SESSION_ID=${2-default_session_id}
-    shift 2
+    SESSION_ID=${1-default_session_id}
+    shift 1
     CMD=${@-ls}
-    echo "[new session=$SESSION_ID, conda_env=$CONDA_ENV] $CMD"
-    tmux kill-session -t $SESSION_ID
+    echo "[new session=$SESSION_ID, conda_env=$CONDA_DEFAULT_ENV] $CMD"
+    tmux kill-session -t $SESSION_ID &> /dev/null
     tmux new-session -c `pwd` -s $SESSION_ID -d
     tmux send-keys -t $SESSION_ID "conda activate $CONDA_DEFAULT_ENV" Enter
     tmux send-keys -t $SESSION_ID "$CMD" Enter
@@ -28,6 +27,6 @@ waitfor_experiments() {
 }
 
 # Examples
-# detached_experiment base exp1 sleep 5
-# detached_experiment base exp2 sleep 12
+# detached_experiment exp1 sleep 5
+# detached_experiment exp2 sleep 12
 # waitfor_experiments exp1 exp2
