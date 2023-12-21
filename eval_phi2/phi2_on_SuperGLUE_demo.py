@@ -23,7 +23,7 @@ genconfig.update(
     do_sample=False,
     max_length=2048
 )
-stop_list = lce.common_stops + lce.newsect_stops
+stop_list = lce.common_stops + lce.newsect_stops + lce.code_stops
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,

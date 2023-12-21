@@ -8,6 +8,7 @@ common_stops = ['<|endoftext|>', '<|im_end|>', '</s>']
 newline_stops = ['\n']
 double_newline_stops = ['\n\n']
 newsect_stops = ['##']
+code_stops = ['"""', "'''"]
 
 class KeywordsStopper(StoppingCriteria):
     def __init__(self, tokenizer, keywords):
