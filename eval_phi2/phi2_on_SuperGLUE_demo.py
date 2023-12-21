@@ -36,7 +36,7 @@ phi2_settings = {
 from functools import partial
 from datasets import load_dataset
 SuperGLUE_list = 'boolq cb copa multirc record rte wic wsc'
-SuperGLUE_select = 'copa' # change this!
+SuperGLUE_select = 'rte' # change this!
 assert SuperGLUE_select in SuperGLUE_list.split()
 ds = load_dataset("super_glue", SuperGLUE_select)
 SuperGLUE_adapters = {
@@ -94,6 +94,19 @@ SuperGLUE_adapters = {
             )
         })
     },
+    "rte": lambda j: {
+        'input': lce.phi2_model.prompt_QA(
+            lce.NLI_task.Qv1_RTE_0shot(j['hypothesis'], j['premise'], label_ids={
+                    'entailment': 0,
+                    'not_entailment': 1
+                }
+            )
+        ),
+        'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),
+        '_output_process': (lambda o: {
+            'prediction': int(lce.utils.extract_by_list_of_strings(o['out_text'], ['0', '1']))
+        })
+    },
 }
 SuperGLUE_metrics = {
     'boolq': [
@@ -125,7 +138,13 @@ SuperGLUE_metrics = {
         lce.Accuracy('valid output',
             judge=partial(lce.if_output_contain_uncased, ['@placeholder'])),
         lce.TokenStats('token stats')
-    ]
+    ],
+    'rte': [
+        lce.super_glue.Default_metrics('RTE metrics', SuperGLUE_select),
+        lce.Accuracy('valid output',
+            judge=partial(lce.if_output_contain_uncased, ['0', '1'])),
+        lce.TokenStats('token stats')
+    ],
 }
 report = lce.evaluate(phi2_settings, ds['validation'].select(range(5)),
     data_adapter=SuperGLUE_adapters[SuperGLUE_select],

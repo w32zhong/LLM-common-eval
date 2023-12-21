@@ -1,7 +1,8 @@
 default_label_ids={
     'entailment': 0,
     'neutral': 1,
-    'contradiction': 2
+    'contradiction': 2,
+    'not_entailment': 1
 }
 
 def Qv1_0shot(hypothesis, premise, label_ids=default_label_ids):
@@ -26,3 +27,15 @@ def Qv1_fewshot(hypothesis, premise, support_set, label_ids=default_label_ids):
         Q += f'Example#{i}:\n' + Qv1_example(*support) + '\n'
     Q += 'Now, given:\n' + Qv1_example(hypothesis, premise)
     return Q
+
+
+def Qv1_RTE_0shot(hypothesis, premise, label_ids=default_label_ids):
+    return f'''Given a hypothesis and a premise below, please determine the truthfulness of the hypothesis by looking at the premise. Output a label number {label_ids['entailment']}, indicating that the hypothesis entails the premise. Or {label_ids['not_entailment']}, indicating non-entailment.
+
+## Premise:
+{premise}
+
+## Hypothesis:
+{hypothesis}
+
+## Response:'''
