@@ -36,7 +36,7 @@ phi2_settings = {
 from functools import partial
 from datasets import load_dataset
 SuperGLUE_list = 'boolq cb copa multirc record rte wic wsc'
-SuperGLUE_select = 'cb' # change this!
+SuperGLUE_select = 'copa' # change this!
 assert SuperGLUE_select in SuperGLUE_list.split()
 ds = load_dataset("super_glue", SuperGLUE_select)
 SuperGLUE_adapters = {
@@ -61,6 +61,15 @@ SuperGLUE_adapters = {
         'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1, 2]),
         '_output_process': (lambda o: {
             'prediction': int(lce.utils.extract_by_list_of_strings(o['out_text'], ['1', '2', '3']))
+        })
+    },
+    "copa": lambda j: {
+        'input': lce.phi2_model.prompt_QA(
+            lce.Reasoning_task.Qv1_COPA_0shot(j['premise'], (j['choice1'], j['choice2']), j['question'])
+        ),
+        'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),
+        '_output_process': (lambda o: {
+            'prediction': int(lce.utils.extract_by_list_of_strings(o['out_text'], ['1', '2'])) - 1
         })
     },
     "multirc": lambda j: {
@@ -97,6 +106,12 @@ SuperGLUE_metrics = {
         lce.super_glue.Default_metrics('CommitmentBank metrics', SuperGLUE_select),
         lce.Accuracy('valid output',
             judge=partial(lce.if_output_contain_uncased, ['1', '2', '3'])),
+        lce.TokenStats('token stats')
+    ],
+    'copa': [
+        lce.super_glue.Default_metrics('COPA metrics', SuperGLUE_select),
+        lce.Accuracy('valid output',
+            judge=partial(lce.if_output_contain_uncased, ['1', '2'])),
         lce.TokenStats('token stats')
     ],
     'multirc': [
