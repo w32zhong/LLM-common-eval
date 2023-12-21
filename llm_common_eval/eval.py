@@ -70,9 +70,9 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
     set_seed(manual_seed)
     log_fs = setup_endpoint(log_endpoint)
     if run_name: # useful in Colab
-        prefix = init_logging_prefix(log_fs, run_name)
+        prefix, report_file = init_logging_prefix(log_fs, run_name)
     else:
-        prefix = init_logging_prefix(log_fs, sys.argv[0])
+        prefix, report_file = init_logging_prefix(log_fs, sys.argv[0])
     print('[listdir root]', log_fs.listdir('/'))
     # data loader
     from torch.utils.data import DataLoader
@@ -140,4 +140,15 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
             for metric in metrics:
                 metric.add_json_sample(log)
                 print('[Running metric]', metric.report())
-    return dict([(metric.name, metric.report()) for metric in metrics])
+    report = dict([(metric.name, metric.report()) for metric in metrics])
+    # done
+    with log_fs.open(report_file, 'r+') as fh:
+        try:
+            run_json = json.load(fh)
+            fh.seek(0)
+            json.dump({**run_json, 'report': report}, fh, indent=2)
+            fh.flush()
+
+        except JSONDecodeError:
+            pass # we've lost the run file?
+    return report

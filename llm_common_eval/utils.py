@@ -113,6 +113,9 @@ class RemoteS3LogFS(LogFS):
 ###################
 # logging endpoint
 ###################
+import json
+
+
 def read_s3_credential(path='~/.aws/credentials'):
     cfg = configparser.ConfigParser(allow_no_value=True)
     cfg.read(os.path.expanduser(path))
@@ -138,11 +141,16 @@ def init_logging_prefix(log_fs, script_path):
 
     timestamp = f'{datetime.now():%Y-%m-%d_%H:%M:%S%z}'
     git_rev = get_git_revision()
-    with log_fs.open(f'{script_name}/{timestamp}_{git_rev}.run', 'w') as fh:
-        fh.write(get_git_diff())
+    report_file = f'{script_name}/report-{timestamp}.run'
+    with log_fs.open(report_file, 'w') as fh:
+        json.dump({
+            'timestamp': timestamp,
+            'git_diff': get_git_diff(),
+            'git_rev': git_rev
+        }, fh, indent=2)
         fh.flush()
 
-    return script_name
+    return script_name, report_file
 
 
 #####################

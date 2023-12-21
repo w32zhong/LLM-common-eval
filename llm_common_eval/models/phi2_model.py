@@ -7,6 +7,7 @@ def hgf_inference_1batch(inp_data, model=None, tokenizer=None,
     prompt = inp_data[0]
     inputs = tokenizer(prompt, return_tensors="pt",
         return_attention_mask=False)
+    inputs.to(model.device)
     inp_tokens = inputs['input_ids'][0]
     inp_length = len(inp_tokens)
     res_tokens = model.generate(**inputs,
