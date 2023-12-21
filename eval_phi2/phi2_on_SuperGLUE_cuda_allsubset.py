@@ -129,10 +129,12 @@ def main(SuperGLUE_select, log_endpoint='non_exists!', devices="0", runname=None
         "wsc": lambda j: {
             'input': lce.phi2_model.prompt_QA(
                 lce.NLU_task.Qv1_WSC_0shot(
-                    lce.utils.string_spans_wrapper(j['text'], [
-                        (j['span1_index'], j['span1_index'] + len(j['span1_text'])),
-                        (j['span2_index'], j['span2_index'] + len(j['span2_text'])),
-                    ])
+                    ' '.join(
+                        lce.utils.string_spans_wrapper(j['text'].split(), [
+                            (j['span1_index'], j['span1_index'] + 1),
+                            (j['span2_index'], j['span2_index'] + 1),
+                        ])
+                    )
                 )
             ),
             'label': lce.assert_and_return(j['label'], lambda x: x in [0, 1]),

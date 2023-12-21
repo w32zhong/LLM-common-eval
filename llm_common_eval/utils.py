@@ -230,9 +230,20 @@ def extract_by_list_of_strings(x, alist):
 
 def string_span_wrapper(x, span, wrapper=('[[', ']]')):
     wrapp_word = x[span[0]:span[1]]
-    return x[:span[0]] + wrapper[0] + wrapp_word + wrapper[1] + x[span[1]:]
+    if isinstance(wrapp_word, str):
+        return x[:span[0]] + wrapper[0] + wrapp_word + wrapper[1] + x[span[1]:]
+    else:
+        return x[:span[0]] + [wrapper[0]] + wrapp_word + [wrapper[1]] + x[span[1]:]
 
 
 def string_spans_wrapper(x, spans, wrapper=('[[', ']]')):
-    #raise NotImplemented
+    accum = 0
+    sorted_spans = sorted(spans)
+    for span in sorted_spans:
+        span = (span[0] + accum, span[1] + accum)
+        x = string_span_wrapper(x, span, wrapper=wrapper)
+        if isinstance(x, str):
+            accum += len(wrapper[0]) + len(wrapper[1])
+        else:
+            accum += 2
     return x
