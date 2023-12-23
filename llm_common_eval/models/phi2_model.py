@@ -13,7 +13,7 @@ def hgf_inference_1batch(inp_data, model=None, tokenizer=None,
     res_tokens = model.generate(**inputs,
         generation_config=generation_cfg,
         streamer=streamer,
-        stopping_criteria=stoplist
+        stopping_criteria=stoplist([inp_length])
     )
     if debug: print(tokenizer.decode(res_tokens[0]))
     out_tokens = res_tokens[0][inp_length:]
