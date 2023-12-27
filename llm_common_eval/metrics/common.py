@@ -2,6 +2,7 @@ import re
 import math
 import statistics
 import itertools
+from rouge_score import rouge_scorer
 
 
 class MetricBase():
@@ -160,4 +161,38 @@ class Perplexity(MetricBase):
         return dict(name=self.name,
             samples=samples,
             mean_ppl=mean_ppl
+        )
+
+
+class ROUGE(MetricBase):
+    def __init__(self, name, pred_key='out_text', ref_key='label'):
+        super().__init__(name)
+        self.pred_key = pred_key
+        self.ref_key = ref_key
+        self.metrics = ['rouge1', 'rouge2', 'rougeL', 'rougeLsum']
+        self.rouge = rouge_scorer.RougeScorer(self.metrics, use_stemmer=True)
+
+    def calc_rouge(self, pred, ref):
+        scores = self.rouge.score(pred, ref)
+        #print(pred, ref, scores) ### DEBUG
+        scores = dict([(k, v.fmeasure) for k, v in scores.items()])
+        return scores
+
+    def add_json_sample(self, j):
+        scores = [
+            self.calc_rouge(out[self.pred_key], j[self.ref_key])
+            for out in j['output_trials'][:self.n_trials]
+        ]
+        for score in scores:
+            self.samples.append(score)
+
+    def report(self):
+        samples = len(self.samples)
+        mean_scores = dict([
+            (metric, statistics.mean([x[metric] for x in self.samples]))
+            for metric in self.metrics
+        ])
+        return dict(name=self.name,
+            samples=samples,
+            mean_scores=mean_scores
         )

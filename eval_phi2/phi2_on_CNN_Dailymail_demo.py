@@ -40,13 +40,15 @@ ds = load_dataset("cnn_dailymail", '3.0.0')
 report = lce.evaluate(phi2_settings, ds['validation'].select(range(1)),
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
-            lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
+            #lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
+            lce.Debug_task.Qv1()
         ),
         'label': lce.assert_and_return(j['highlights'], lambda x: isinstance(x, str)),
         '_example': lambda k: k['input'] + ' ' + k['label']
     },
     metrics=[
-        lce.Perplexity('perplexity'),
+        lce.Perplexity('perplexity stats'),
+        lce.ROUGE('ROUGE stats'),
         lce.TokenStats('token stats')
     ],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.

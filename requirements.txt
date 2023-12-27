@@ -7,3 +7,5 @@ datasets
 fsspec==2023.9.2
 scikit-learn
 fire
+nltk
+rouge_score
