@@ -11,16 +11,21 @@ newsect_stops = ['##']
 code_stops = ['"""', "'''"]
 
 class KeywordsStopper(StoppingCriteria):
-    def __init__(self, tokenizer, keywords, prompt_lengths):
+    def __init__(self, tokenizer, keywords):
         self.keywords = keywords
         self.tokenizer = tokenizer
-        self.prompt_lengths = prompt_lengths
+        self.prompt_lengths = 0
 
     def is_stop(self, text):
         for kw in self.keywords:
             if kw in text:
                 return True
         return False
+
+    def rm_stop(self, text):
+        for kw in self.keywords:
+            text = text.replace(kw, '')
+        return text
 
     def __call__(self, input_ids, scores, **kwargs):
         batch_text = []
@@ -31,13 +36,9 @@ class KeywordsStopper(StoppingCriteria):
         batch_stop = (self.is_stop(b) for b in batch_text)
         return all(batch_stop)
 
-    @staticmethod
-    def make_list(tokenizer, keywords):
-        def func(input_lengths):
-            return StoppingCriteriaList([
-                KeywordsStopper(tokenizer, keywords, input_lengths)
-            ])
-        return func
+    def make_list(self, prompt_lengths):
+        self.prompt_lengths = prompt_lengths
+        return StoppingCriteriaList([self])
 
 
 ####################

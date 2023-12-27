@@ -34,7 +34,7 @@ def main(SuperGLUE_select, log_endpoint='non_exists!', devices="0", runname=None
         "tokenizer": tokenizer,
         "inference_fn": lce.models.common.hgf_inference_1batch,
         "generation_cfg": genconfig,
-        "stoplist": lce.KeywordsStopper.make_list(tokenizer, stop_list),
+        "stopper": lce.KeywordsStopper(tokenizer, stop_list),
         "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
     }
 

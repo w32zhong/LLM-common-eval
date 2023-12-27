@@ -2,7 +2,7 @@ import torch
 
 
 def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
-    streamer=None, stoplist=None, generation_cfg=None, debug=False):
+    streamer=None, stopper=None, generation_cfg=None, debug=False):
     prompt = inp_data[0]
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs.to(model.device)
@@ -19,10 +19,11 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
         else:
             loss = None
 
+        stoplist = stopper.make_list(prompt_lengths=[inp_length])
         res_tokens = model.generate(**inputs,
             generation_config=generation_cfg,
             streamer=streamer,
-            stopping_criteria=stoplist([inp_length])
+            stopping_criteria=stoplist
         )
         if debug: print(tokenizer.decode(res_tokens[0]))
         out_tokens = res_tokens[0][inp_length:]
@@ -30,7 +31,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
         return dict(
             input_tokens=[inp_tokens.tolist()],
             outputs=[dict(
-                out_text=out_text,
+                out_text=stopper.rm_stop(out_text),
                 out_tokens=out_tokens.tolist(),
                 loss=loss.item()
             )]
