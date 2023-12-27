@@ -34,15 +34,14 @@ def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
     custom_batch = filter_by_key(adapt_batch,
         lambda k: k not in ['input', '_output_process'])
     out_trials_batch = [[] for _ in input_batch]
-    inp_tokens = None
     for t in range(n_trials):
         print(f'[Inference trial#{t+1}]')
         args = model_setting.copy()
         args.pop('inference_fn')
         time_begin = time.time()
-        inp_tokens, outputs = model_setting['inference_fn'](input_batch, **args)
+        result = model_setting['inference_fn'](input_batch, **args)
         time_end = time.time()
-        for b, out in enumerate(outputs):
+        for b, out in enumerate(result['outputs']):
             time_cost = time_end - time_begin
             out["time_cost"] = time_cost
             if '_output_process' in adapt_batch[0]:
@@ -50,8 +49,8 @@ def do_inference_trials(model_setting, adapt_batch, n_trials, logger):
             else:
                 processed = {}
             out_trials_batch[b].append({**out, **processed})
-    for b, (inp, outs, custom) in enumerate(
-        zip(input_batch, out_trials_batch, custom_batch)):
+    for b, (inp, inp_tokens, outs, custom) in enumerate(zip(
+        input_batch, result['input_tokens'], out_trials_batch, custom_batch)):
         log = {
             "exe_node": platform.node(),
             "input": inp,
