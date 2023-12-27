@@ -27,7 +27,7 @@ genconfig.update(
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
-    "inference_fn": lce.phi2_model.hgf_inference_1batch,
+    "inference_fn": lce.models.common.hgf_inference_1batch,
     "generation_cfg": genconfig,
     "stoplist": lce.KeywordsStopper.make_list(tokenizer,
         lce.common_stops + lce.double_newline_stops),
