@@ -1,4 +1,5 @@
 import re
+import math
 import statistics
 import itertools
 
@@ -133,3 +134,30 @@ def if_output_contain_uncased(uncased_list, inp, out, label):
         if re.search(uncased, out, re.IGNORECASE):
             return True
     return False
+
+
+class Perplexity(MetricBase):
+    def __init__(self, name, loss_key='loss'):
+        super().__init__(name)
+        self.loss_key = loss_key
+
+    def calc_ppl(self, loss):
+        # loss: (1/N) sum_i^N log p(label_i)
+        # ref: https://huggingface.co/docs/transformers/perplexity
+        return math.exp(loss)
+
+    def add_json_sample(self, j):
+        perplexities = [
+            self.calc_ppl(output[self.loss_key])
+            for output in j['output_trials'][:self.n_trials]
+        ]
+        mean_ppl = statistics.mean(perplexities)
+        self.samples.append(mean_ppl)
+
+    def report(self):
+        samples = len(self.samples)
+        mean_ppl = statistics.mean(self.samples)
+        return dict(name=self.name,
+            samples=samples,
+            mean_ppl=mean_ppl
+        )

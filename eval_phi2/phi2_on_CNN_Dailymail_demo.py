@@ -42,9 +42,11 @@ report = lce.evaluate(phi2_settings, ds['validation'].select(range(1)),
         'input': lce.phi2_model.prompt_QA(
             lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
         ),
-        'label': lce.assert_and_return(j['highlights'], lambda x: isinstance(x, str))
+        'label': lce.assert_and_return(j['highlights'], lambda x: isinstance(x, str)),
+        '_example': lambda k: k['input'] + ' ' + k['label']
     },
     metrics=[
+        lce.Perplexity('perplexity'),
         lce.TokenStats('token stats')
     ],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.
