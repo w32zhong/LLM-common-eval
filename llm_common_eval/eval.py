@@ -147,13 +147,9 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                 print('[Running metric]', metric.report())
     report = dict([(metric.name, metric.report()) for metric in metrics])
     # done
-    with log_fs.open(report_file, 'r+') as fh:
-        try:
-            run_json = json.load(fh)
-            fh.seek(0)
-            json.dump({**run_json, 'report': report}, fh, indent=2)
-            fh.flush()
-
-        except JSONDecodeError:
-            pass # we've lost the run file?
+    with log_fs.open(report_file, 'r') as fh:
+        run_json = json.load(fh)
+    with log_fs.open(report_file, 'w') as fh:
+        json.dump({**run_json, 'report': report}, fh, indent=2)
+        fh.flush()
     return report
