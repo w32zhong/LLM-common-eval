@@ -42,7 +42,7 @@ def main(log_endpoint='non_exists!', devices="0", runname='CNN_Daily'):
     from functools import partial
     from datasets import load_dataset
     ds = load_dataset("cnn_dailymail", '3.0.0')
-    report = lce.evaluate(phi2_settings, ds['validation'].select(range(1)),
+    report = lce.evaluate(phi2_settings, ds['test'],
         data_adapter=lambda j: {
             'input': lce.phi2_model.prompt_QA(
                 #lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
@@ -54,7 +54,7 @@ def main(log_endpoint='non_exists!', devices="0", runname='CNN_Daily'):
         metrics=[
             lce.Perplexity('perplexity'),
             lce.ROUGE('ROUGE score'),
-            lce.bert_score.BERTScore('BERT score', device='cuda:0'),
+            lce.bert_score.BERTScore('BERT score', device='cuda'),
             lce.TokenStats('token stats')
         ],
         log_endpoint=log_endpoint, # will fallback to filesystem current directory.

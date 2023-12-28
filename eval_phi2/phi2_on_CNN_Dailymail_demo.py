@@ -37,7 +37,7 @@ phi2_settings = {
 from functools import partial
 from datasets import load_dataset
 ds = load_dataset("cnn_dailymail", '3.0.0')
-report = lce.evaluate(phi2_settings, ds['validation'].select(range(1)),
+report = lce.evaluate(phi2_settings, ds['test'].select(range(1)),
     data_adapter=lambda j: {
         'input': lce.phi2_model.prompt_QA(
             #lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
