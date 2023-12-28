@@ -12,6 +12,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
         if exp_data is not None:
             prompt = exp_data[0]
             example_toks = tokenizer(prompt, return_tensors="pt")
+            example_toks.to(model.device)
             example_inp_ids = example_toks['input_ids']
             example_trg_ids = example_inp_ids.clone()
             example_trg_ids[..., :inp_length] = -100
