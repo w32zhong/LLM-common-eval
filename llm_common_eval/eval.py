@@ -89,8 +89,6 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
     # run through data
     for i, batch_data in enumerate(dataloader):
         row_base = i * batch_size
-        for x in batch_data:
-            print(x)
         adapt_data = [data_adapter(x) for x in batch_data]
         # test whether to skip inference by looking at the log file
         log_path = f'{prefix}/{n_trials}trial-row{row_base}'
