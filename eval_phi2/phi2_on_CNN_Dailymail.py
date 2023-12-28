@@ -40,7 +40,7 @@ def main(
         "inference_fn": lce.models.common.hgf_inference_1batch,
         "generation_cfg": genconfig,
         "stopper": lce.KeywordsStopper(tokenizer, stop_list),
-        "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
+        "streamer": None # TextStreamer(tokenizer)
     }
 
     # Evaluate
