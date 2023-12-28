@@ -51,10 +51,9 @@ gen_config = GenerationConfig.from_pretrained("microsoft/phi-2",
 phi2_settings = {
     "model": model,
     "tokenizer": tokenizer,
-    "inference_fn": lce.phi2_model.hgf_inference_1batch,
+    "inference_fn": lce.models.common.hgf_inference_1batch,
     "generation_cfg": gen_config,
-    "stoplist": lce.KeywordsStopper.make_list(tokenizer,
-        lce.common_stops + lce.double_newline_stops),
+    "stopper": lce.KeywordsStopper(tokenizer, lce.common_stops),
     "streamer": TextStreamer(tokenizer) # set to None to be less verbose!
 }
 ```
@@ -81,21 +80,6 @@ report = lce.evaluate(phi2_settings, load_dataset("snli")['test'],
 import json
 print('=' * 20, 'Report', '=' * 20)
 print(json.dumps(report, indent=2))
-```
-
-Example output:
-```
-==================== Report ====================
-[
-  {
-    "name": "pass@3",
-    "value": 0.4
-  },
-  {
-    "name": "maj@3",
-    "value": 0.2
-  }
-]
 ```
 
 ## Logging
