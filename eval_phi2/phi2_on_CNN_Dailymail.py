@@ -1,5 +1,7 @@
 def main(
     log_endpoint='non_exists!',
+    slow_mode=False,
+    skip_until=0,
     devices="0",
     runname='CNN_Daily',
     dataset_version='3.0.0'):
@@ -62,10 +64,10 @@ def main(
             lce.TokenStats('token stats')
         ],
         log_endpoint=log_endpoint, # will fallback to filesystem current directory.
-        manual_seed=42,
+        manual_seed=42, # not meaningful for greedy strategy here, but just keep it.
         run_name=runname,
-        skip_until=0,
-        slow_mode=True
+        skip_until=skip_until,
+        slow_mode=slow_mode
     )
 
     # Report
