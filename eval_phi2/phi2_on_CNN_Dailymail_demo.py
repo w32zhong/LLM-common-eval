@@ -47,8 +47,9 @@ report = lce.evaluate(phi2_settings, ds['validation'].select(range(1)),
         '_example': lambda k: k['input'] + ' ' + k['label']
     },
     metrics=[
-        lce.Perplexity('perplexity stats'),
-        lce.ROUGE('ROUGE stats'),
+        lce.Perplexity('perplexity'),
+        lce.ROUGE('ROUGE score'),
+        lce.BERTScore('BERT score'),
         lce.TokenStats('token stats')
     ],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.
