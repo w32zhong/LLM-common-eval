@@ -1,4 +1,9 @@
-def main(log_endpoint='non_exists!', devices="0", runname='CNN_Daily'):
+def main(
+    log_endpoint='non_exists!',
+    devices="0",
+    runname='CNN_Daily',
+    dataset_version='3.0.0'):
+
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     devices = str(devices) if isinstance(devices, int) else ','.join(map(str, devices))
     os.environ["CUDA_VISIBLE_DEVICES"] = devices
@@ -41,12 +46,11 @@ def main(log_endpoint='non_exists!', devices="0", runname='CNN_Daily'):
     # Evaluate
     from functools import partial
     from datasets import load_dataset
-    ds = load_dataset("cnn_dailymail", '3.0.0')
+    ds = load_dataset("cnn_dailymail", dataset_version)
     report = lce.evaluate(phi2_settings, ds['test'],
         data_adapter=lambda j: {
             'input': lce.phi2_model.prompt_QA(
-                #lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
-                lce.Debug_task.Qv1()
+                lce.Summarization_task.Qv1_multi_sentences_0shot(j['article'])
             ),
             'label': lce.assert_and_return(j['highlights'], lambda x: isinstance(x, str)),
             '_example': lambda k: k['input'] + ' ' + k['label']
