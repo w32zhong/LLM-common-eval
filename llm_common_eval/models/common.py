@@ -17,6 +17,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
             example_trg_ids = example_inp_ids.clone()
             example_trg_ids[..., :inp_length] = -100
             loss = model(example_inp_ids, labels=example_trg_ids).loss
+            loss = loss.item()
         else:
             loss = None
 
@@ -34,6 +35,6 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
             outputs=[dict(
                 out_text=stopper.rm_stop(out_text),
                 out_tokens=out_tokens.tolist(),
-                loss=loss.item()
+                loss=loss
             )]
         )
