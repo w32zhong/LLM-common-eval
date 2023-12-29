@@ -10,3 +10,4 @@ fire
 nltk
 rouge_score
 bert-score
+bitsandbytes
