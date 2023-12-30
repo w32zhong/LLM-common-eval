@@ -5,7 +5,7 @@ from transformers import GenerationConfig
 from transformers import TextStreamer
 hgf_repo = "mistralai/Mistral-7B-Instruct-v0.2"
 model = AutoModelForCausalLM.from_pretrained(hgf_repo,
-    device_map="cuda",
+    device_map="auto",
     torch_dtype=torch.float16,
     trust_remote_code=True)
 tokenizer = AutoTokenizer.from_pretrained(hgf_repo, trust_remote_code=True)
