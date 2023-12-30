@@ -8,6 +8,7 @@ detached_experiment() {
     tmux kill-session -t $SESSION_ID &> /dev/null
     tmux new-session -c `pwd` -s $SESSION_ID -d
     tmux send-keys -t $SESSION_ID "conda activate $CONDA_DEFAULT_ENV" Enter
+    tmux send-keys -t $SESSION_ID "export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" Enter
     tmux send-keys -t $SESSION_ID "$CMD" Enter
     tmux send-keys -t $SESSION_ID "exit" Enter
 }
