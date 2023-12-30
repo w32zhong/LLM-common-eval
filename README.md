@@ -133,3 +133,13 @@ lce.evaluate(
     slow_mode=True
 )
 ```
+
+## Extra packages
+To install the newest AutoAWQ from PyPi, you need at least CUDA 12.1 installed.
+```sh
+conda create -n awq python=3.8
+conda activate awq
+conda install lxml
+pip install --default-timeout=100 autoawq
+pip install -r requirements.txt
+```
