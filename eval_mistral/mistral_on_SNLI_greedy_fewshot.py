@@ -24,7 +24,7 @@ sys.path.insert(0, '.')
 import llm_common_eval as lce
 genconfig.update(
     do_sample=False,
-    max_length=2048
+    max_length=4096
 )
 stop_list = lce.common_stops + lce.double_newline_stops
 phi2_settings = {
