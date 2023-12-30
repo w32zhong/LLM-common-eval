@@ -1,4 +1,6 @@
 # Arg parse
+import os
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--shots', type=int, required=True)
