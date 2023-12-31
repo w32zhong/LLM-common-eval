@@ -135,6 +135,17 @@ lce.evaluate(
 ```
 
 ## Extra packages
+To install CUDA and Flash Attention:
+```sh
+pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu118
+python -c 'import torch; print(torch.cuda.is_available())'
+python -c 'import torch; print(torch.version.cuda)'
+python -c 'import torch; print(torch.__version__)'
+conda install cuda -c nvidia/label/cuda-11.8.0 # must match torch cuda version
+unset CUDA_HOME
+pip3 install flash-attn #==2.4.2
+```
+
 To install the newest AutoAWQ from PyPi, you need at least CUDA 12.1 installed.
 ```sh
 conda create -n awq python=3.8
