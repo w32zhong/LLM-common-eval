@@ -32,6 +32,8 @@ def longeval_for_LineRetrieval():
                 }
 
 
+# See https://lmsys.org/blog/2023-06-29-longchat/
+
 from datasets import Dataset, DatasetDict
 dataset = DatasetDict({'test': Dataset.from_generator(longeval_for_TopicRetrieval)})
 dataset.push_to_hub("w32zhong/longeval_TopicRetrieval")
