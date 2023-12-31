@@ -32,6 +32,7 @@ def gen_data():
         for i in range(num_tests):
             prompt_text, pass_key = generate_prompt(n)
             yield {
+                'n_garbage': n,
                 'prompt': prompt_text,
                 'pass_key': pass_key
             }
