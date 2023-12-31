@@ -45,7 +45,8 @@ You have to indicate your selected entity at the very end of your output, in the
 def Qv1_ReCoRD_output_process(output):
     if '@placeholder' in output:
         output = output.split('@placeholder')[-1]
-        return output.replace('=', ' ')
+        output = output.replace('=', ' ')
+        return output.split('.')[0]
     else:
         return output
 
