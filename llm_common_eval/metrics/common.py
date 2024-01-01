@@ -87,7 +87,7 @@ class TokenStats(MetricBase):
             [self.avg_trials(s[2], float) for s in self.samples]
         )
         time_cost_per_token = (time_costs_stats['sum_time_cost']
-            / out_tokens_stats['sum_output_tokens'])
+            / max(1, out_tokens_stats['sum_output_tokens']))
         return dict(name=self.name,
             **inp_tokens_stats,
             **out_tokens_stats,
@@ -123,7 +123,7 @@ class Accuracy():
             self.positives += 1
 
     def report(self):
-        percent = self.positives / len(self.samples)
+        percent = self.positives / max(1, len(self.samples))
         samples = len(self.samples)
         positives = self.positives
         return dict(name=self.name,
