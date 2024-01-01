@@ -25,7 +25,7 @@ genconfig.update(
     max_length=2048
 )
 stop_list = lce.common_stops + lce.double_newline_stops
-phi2_settings = {
+model_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.models.common.hgf_inference_1batch,
@@ -38,7 +38,7 @@ phi2_settings = {
 from datasets import load_dataset
 ds = load_dataset("snli")
 ds = ds.filter(lambda j: j["label"] != -1)
-report = lce.evaluate(phi2_settings, ds['test'],
+report = lce.evaluate(model_settings, ds['test'],
     data_adapter=lambda j: {
         'input': lce.mistral_model.prompt_instruct_QA(
             lce.NLI_task.Qv1_0shot(j['hypothesis'], j['premise'])

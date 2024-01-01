@@ -29,7 +29,7 @@ genconfig.update(
     max_length=2048
 )
 stop_list = lce.common_stops + lce.newsect_stops + lce.code_stops
-phi2_settings = {
+model_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.models.common.hgf_inference_1batch,
@@ -193,7 +193,7 @@ SuperGLUE_metrics = {
         lce.TokenStats('token stats')
     ],
 }
-report = lce.evaluate(phi2_settings, ds['validation'],
+report = lce.evaluate(model_settings, ds['validation'],
     data_adapter=SuperGLUE_adapters[SuperGLUE_select],
     metrics=SuperGLUE_metrics[SuperGLUE_select],
     log_endpoint='non-exists', # will fallback to filesystem current directory.
