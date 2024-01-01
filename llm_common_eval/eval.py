@@ -143,8 +143,8 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                 lambda k: not re.match(r"(.*)_tokens$", k))
             print('[Evaluating]', log_path, json.dumps(display_log, indent=2))
             for metric in metrics:
-                metric.add_json_sample(log)
-                print('[Running metric]', metric.report())
+                if not metric.add_json_sample(log) is False:
+                    print('[Running metric]', metric.report())
     report = dict([(metric.name, metric.report()) for metric in metrics])
     # done
     with log_fs.open(report_file, 'r') as fh:

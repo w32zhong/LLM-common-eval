@@ -30,6 +30,8 @@ class ConditionalMetric():
     def add_json_sample(self, j):
         if self.condition_fn(j):
             self.metric.add_json_sample(j)
+            return True
+        return False
 
     def report(self):
         return self.metric.report()
@@ -43,7 +45,7 @@ class ConditionalMetric():
                 cp_metric.name = f'{metric.name} @ {colkey}={val}'
                 alist.append(ConditionalMetric(
                     cp_metric,
-                    condition_fn=lambda j: j[colkey] == val
+                    condition_fn=lambda j, t_val=val: j[colkey] == t_val
                 ))
         return alist
 
