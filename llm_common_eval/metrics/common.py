@@ -131,6 +131,10 @@ def if_output_contain_label(inp, out, label):
     return label in out
 
 
+def if_output_contain_label_uncased(inp, out, label):
+    return label.lower() in out.lower()
+
+
 def if_output_contain_uncased(uncased_list, inp, out, label):
     for uncased in uncased_list:
         if re.search(uncased, out, re.IGNORECASE):
