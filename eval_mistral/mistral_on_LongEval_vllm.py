@@ -7,35 +7,18 @@ parser.add_argument('--dataset', type=str, required=True)
 args = parser.parse_args()
 
 # Load
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import GenerationConfig
-from transformers import TextStreamer
+from vllm import LLM, SamplingParams
 hgf_repo = "mistralai/Mistral-7B-Instruct-v0.2"
-model = AutoModelForCausalLM.from_pretrained(hgf_repo,
-    device_map="auto",
-    torch_dtype=torch.float16,
-    #attn_implementation="flash_attention_2",
-    trust_remote_code=True)
-tokenizer = AutoTokenizer.from_pretrained(hgf_repo, trust_remote_code=True)
-genconfig = GenerationConfig.from_pretrained(hgf_repo)
+vllm_model = LLM(model=hgf_repo, trust_remote_code=True)
 
 # Set
 import sys
 sys.path.insert(0, '.')
 import llm_common_eval as lce
-genconfig.update(
-    do_sample=False,
-    max_length=8192
-)
-stop_list = lce.common_stops + lce.newsect_stops + lce.code_stops
 model_settings = {
-    "model": model,
-    "tokenizer": tokenizer,
-    "inference_fn": lce.models.common.hgf_inference_1batch,
-    "generation_cfg": genconfig,
-    "stopper": lce.KeywordsStopper(tokenizer, stop_list),
-    "streamer": None # TextStreamer(tokenizer) # set to None to be less verbose!
+    "vllm_model": vllm_model,
+    "sampling_params": SamplingParams(temperature=0.8, top_p=0.95),
+    "inference_fn": lce.models.common.vllm_inference_1batch,
 }
 
 # Evaluate

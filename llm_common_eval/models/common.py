@@ -38,3 +38,9 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
                 loss=loss
             )]
         )
+
+
+def vllm_inference_1batch(inp_data, exp_data, vllm_model=None,
+    sampling_params=None):
+    breakpoint()
+    pass
