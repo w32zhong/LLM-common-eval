@@ -1,4 +1,5 @@
 import re
+import copy
 import math
 import statistics
 import itertools
@@ -37,9 +38,10 @@ class ConditionalMetric():
         alist = []
         if colkey in dataset.features:
             for val in dataset.unique(colkey):
-                metric.name = f'{metric.name} @ {colkey}={val}'
+                cp_metric = copy.deepcopy(metric)
+                cp_metric.name = f'{metric.name} @ {colkey}={val}'
                 alist.append(ConditionalMetric(
-                    metric,
+                    cp_metric,
                     condition_fn=lambda j: j[colkey] == val
                 ))
         return alist
@@ -74,26 +76,29 @@ class TokenStats(MetricBase):
         }
 
     def report(self):
-        inp_tokens_stats = self.stats(
-            'input_tokens',
-            [len(s[0]) for s in self.samples]
-        )
-        out_tokens_stats = self.stats(
-            'output_tokens',
-            [self.avg_trials(s[1], len) for s in self.samples]
-        )
-        time_costs_stats = self.stats(
-            'time_cost',
-            [self.avg_trials(s[2], float) for s in self.samples]
-        )
-        time_cost_per_token = (time_costs_stats['sum_time_cost']
-            / max(1, out_tokens_stats['sum_output_tokens']))
-        return dict(name=self.name,
-            **inp_tokens_stats,
-            **out_tokens_stats,
-            **time_costs_stats,
-            time_cost_per_token=time_cost_per_token
-        )
+        try:
+            inp_tokens_stats = self.stats(
+                'input_tokens',
+                [len(s[0]) for s in self.samples]
+            )
+            out_tokens_stats = self.stats(
+                'output_tokens',
+                [self.avg_trials(s[1], len) for s in self.samples]
+            )
+            time_costs_stats = self.stats(
+                'time_cost',
+                [self.avg_trials(s[2], float) for s in self.samples]
+            )
+            time_cost_per_token = (time_costs_stats['sum_time_cost']
+                / max(1, out_tokens_stats['sum_output_tokens']))
+            return dict(name=self.name,
+                **inp_tokens_stats,
+                **out_tokens_stats,
+                **time_costs_stats,
+                time_cost_per_token=time_cost_per_token
+            )
+        except statistics.StatisticsError:
+            return dict(name=self.name)
 
 
 class Accuracy():
