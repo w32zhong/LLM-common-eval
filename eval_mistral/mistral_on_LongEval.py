@@ -44,23 +44,61 @@ ds = load_dataset(args.dataset)
 data_adapters = {
     "w32zhong/longeval_LineRetrieval": lambda j: {
         'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
-        'label': str(j['expected_number'])
+        'label': str(j['expected_number']),
+        'num_lines': int(j['num_lines'])
     },
     "w32zhong/longeval_TopicRetrieval": lambda j: {
         'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
-        'label': j['topics'][0]
+        'label': j['topics'][0],
+        'num_topics': int(j['num_topics'])
     },
     "w32zhong/PassKeyRetrieval": lambda j: {
         'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
-        'label': str(j['pass_key'])
+        'label': str(j['pass_key']),
+        'n_garbage': int(j['n_garbage'])
     },
+}
+all_metrics = {
+    "w32zhong/longeval_LineRetrieval": [
+        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+        lce.TokenStats('token stats'),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+            dataset=ds['test'], colkey='num_lines'
+        ),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.TokenStats('token stats'),
+            dataset=ds['test'], colkey='num_lines'
+        )
+    ],
+    "w32zhong/longeval_TopicRetrieval": [
+        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+        lce.TokenStats('token stats'),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+            dataset=ds['test'], colkey='num_topics'
+        ),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.TokenStats('token stats'),
+            dataset=ds['test'], colkey='num_topics'
+        )
+    ],
+    "w32zhong/PassKeyRetrieval": [
+        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+        lce.TokenStats('token stats'),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
+            dataset=ds['test'], colkey='n_garbage'
+        ),
+        *lce.ConditionalMetric.metric_list_by_uniq_colval(
+            lce.TokenStats('token stats'),
+            dataset=ds['test'], colkey='n_garbage'
+        )
+    ],
 }
 report = lce.evaluate(model_settings, ds['test'],
     data_adapter=data_adapters[args.dataset],
-    metrics=[
-        lce.AccuracyPassAnyK('accuracy', judge=lce.if_output_contain_label_uncased),
-        lce.TokenStats('token stats')
-    ],
+    metrics=all_metrics[args.dataset],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.
     manual_seed=42,
     run_name=f'mistral_on_{args.dataset}'.replace('/', '_'),

@@ -19,11 +19,35 @@ class MetricBase():
         raise NotImplemented
 
 
-class TokenStats():
+class ConditionalMetric():
+    def __init__(self, metric, condition_fn):
+        self.metric = metric
+        self.n_trials = metric.n_trials
+        self.condition_fn = condition_fn
+
+    def add_json_sample(self, j):
+        if self.condition_fn(j):
+            self.metric.add_json_sample(j)
+
+    def report(self):
+        return self.metric.report()
+
+    @staticmethod
+    def metric_list_by_uniq_colval(metric, dataset, colkey):
+        alist = []
+        if colkey in dataset.features:
+            for val in dataset.unique(colkey):
+                metric.name = f'{metric.name} @ {colkey}={val}'
+                alist.append(ConditionalMetric(
+                    metric,
+                    condition_fn=lambda j: j[colkey] == val
+                ))
+        return alist
+
+
+class TokenStats(MetricBase):
     def __init__(self, name):
-        self.name = name
-        self.samples = []
-        self.n_trials = 1
+        super().__init__(name)
 
     def add_json_sample(self, j):
         inp_tokens = j['input_tokens']
