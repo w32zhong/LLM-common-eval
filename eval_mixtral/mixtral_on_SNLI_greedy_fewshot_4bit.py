@@ -30,7 +30,7 @@ genconfig.update(
     max_length=4096
 )
 stop_list = lce.common_stops + lce.double_newline_stops
-phi2_settings = {
+model_settings = {
     "model": model,
     "tokenizer": tokenizer,
     "inference_fn": lce.models.common.hgf_inference_1batch,
@@ -48,7 +48,7 @@ support_set = lce.generate_support_set(
     'label',
     k_shots=args.shots
 )
-report = lce.evaluate(phi2_settings, ds['test'],
+report = lce.evaluate(model_settings, ds['test'],
     data_adapter=lambda j: {
         'input': lce.mistral_model.prompt_instruct_QA(
             lce.NLI_task.Qv1_fewshot(
@@ -64,7 +64,7 @@ report = lce.evaluate(phi2_settings, ds['test'],
     ],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.
     manual_seed=42,
-    run_name=f'mixtral_on_SNLI_greedy_{args.shots}shot_4bit',
+    run_name=f'Mixtral8x7B_on_SNLI_greedy_{args.shots}shot_4bit',
     skip_until=0,
     slow_mode=True
 )
