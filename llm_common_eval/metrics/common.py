@@ -23,6 +23,7 @@ class MetricBase():
 class ConditionalMetric():
     def __init__(self, metric, condition_fn):
         self.metric = metric
+        self.name = metric.name
         self.n_trials = metric.n_trials
         self.condition_fn = condition_fn
 
