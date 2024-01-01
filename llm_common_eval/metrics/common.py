@@ -91,11 +91,14 @@ class TokenStats(MetricBase):
             )
             time_cost_per_token = (time_costs_stats['sum_time_cost']
                 / max(1, out_tokens_stats['sum_output_tokens']))
+            tokens_per_sec = (out_tokens_stats['sum_output_tokens']
+                / max(1, time_costs_stats['sum_time_cost']))
             return dict(name=self.name,
                 **inp_tokens_stats,
                 **out_tokens_stats,
                 **time_costs_stats,
-                time_cost_per_token=time_cost_per_token
+                time_cost_per_token=time_cost_per_token,
+                tokens_per_sec=tokens_per_sec
             )
         except statistics.StatisticsError:
             return dict(name=self.name)
