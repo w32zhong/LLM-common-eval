@@ -9,7 +9,7 @@ args = parser.parse_args()
 # Load
 from vllm import LLM, SamplingParams
 hgf_repo = "mistralai/Mistral-7B-Instruct-v0.2"
-vllm_model = LLM(model=hgf_repo, trust_remote_code=True)
+vllm_model = LLM(model=hgf_repo, trust_remote_code=True, dtype='auto')
 
 # Set
 import sys
