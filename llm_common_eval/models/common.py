@@ -42,5 +42,17 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
 
 def vllm_inference_1batch(inp_data, exp_data, vllm_model=None,
     sampling_params=None):
-    breakpoint()
-    pass
+    prompt = inp_data[0]
+    output = vllm_model.generate(prompt, sampling_params, use_tqdm=False)[0]
+    inp_tokens = output.prompt_token_ids
+    out_text = output.outputs[0].text
+    out_tokens = output.outputs[0].token_ids
+    loss = None if exp_data is None else output.outputs[0].cumulative_logprob
+    return dict(
+        input_tokens=[inp_tokens],
+        outputs=[dict(
+            out_text=out_text,
+            out_tokens=out_tokens,
+            loss=loss
+        )]
+    )

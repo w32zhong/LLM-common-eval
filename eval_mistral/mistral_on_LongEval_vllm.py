@@ -17,7 +17,16 @@ sys.path.insert(0, '.')
 import llm_common_eval as lce
 model_settings = {
     "vllm_model": vllm_model,
-    "sampling_params": SamplingParams(temperature=0.8, top_p=0.95),
+    "sampling_params": SamplingParams(
+        temperature=0.0,
+        best_of=1,
+        top_p=1,
+        top_k=-1,
+        use_beam_search=False,
+        max_tokens=8192,
+        presence_penalty=0,
+        frequency_penalty=0,
+    ),
     "inference_fn": lce.models.common.vllm_inference_1batch,
 }
 
