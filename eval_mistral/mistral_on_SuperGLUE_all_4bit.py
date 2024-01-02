@@ -4,6 +4,7 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, required=True)
+parser.add_argument('--skip_until', type=int, default=0)
 args = parser.parse_args()
 print(args)
 
@@ -204,7 +205,7 @@ report = lce.evaluate(model_settings, ds['validation'],
     log_endpoint='non-exists', # will fallback to filesystem current directory.
     manual_seed=42,
     run_name=f'Mistral_4bit_on_SuperGLUE_{SuperGLUE_select}',
-    skip_until=0,
+    skip_until=args.skip_until,
     slow_mode=True
 )
 

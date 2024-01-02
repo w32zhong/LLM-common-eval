@@ -4,6 +4,7 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset_version', type=str, default='3.0.0')
+parser.add_argument('--skip_until', type=int, default=0)
 args = parser.parse_args()
 
 # Load
@@ -63,7 +64,7 @@ report = lce.evaluate(model_settings, ds['test'],
     log_endpoint='non_exists', # will fallback to filesystem current directory.
     manual_seed=42, # not meaningful for greedy strategy here, but just keep it.
     run_name=None,
-    skip_until=0,
+    skip_until=args.skip_until,
     slow_mode=True
 )
 
