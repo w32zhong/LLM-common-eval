@@ -1,3 +1,10 @@
+# Arg parse
+import os
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+import argparse
+parser = argparse.ArgumentParser()
+args = parser.parse_args()
+
 # Load
 hgf_repo = "microsoft/phi-2"
 from vllm import LLM, SamplingParams
