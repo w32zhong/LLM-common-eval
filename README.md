@@ -104,6 +104,8 @@ python -m pip install awscli
 aws s3 ls "s3://llm-common-eval/" --endpoint-url <endpoint>
 # HANDY: to delete unwanted log files:
 aws s3 rm "s3://llm-common-eval/ipykernel_launcher" --endpoint-url <endpoint> --recursive
+# to download report files:
+aws s3 sync "s3://llm-common-eval/" ./logs --exclude "*" --include "CNN_Daily/report-*" --endpoint-url <endpoint>
 ```
 
 If everything is working, pass `log_endpoint` to `evaluate()`:
