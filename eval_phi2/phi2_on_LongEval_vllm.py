@@ -36,17 +36,17 @@ args.dataset in ['w32zhong/longeval_LineRetrieval', 'w32zhong/longeval_TopicRetr
 ds = load_dataset(args.dataset)
 data_adapters = {
     "w32zhong/longeval_LineRetrieval": lambda j: {
-        'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
+        'input': lce.phi2_model.prompt_QA(j['prompt']),
         'label': str(j['expected_number']),
         'num_lines': int(j['num_lines'])
     },
     "w32zhong/longeval_TopicRetrieval": lambda j: {
-        'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
+        'input': lce.phi2_model.prompt_QA(j['prompt']),
         'label': j['topics'][0],
         'num_topics': int(j['num_topics'])
     },
     "w32zhong/PassKeyRetrieval": lambda j: {
-        'input': lce.mistral_model.prompt_instruct_QA(j['prompt']),
+        'input': lce.phi2_model.prompt_QA(j['prompt']),
         'label': str(j['pass_key']),
         'n_garbage': int(j['n_garbage'])
     },
@@ -94,7 +94,7 @@ report = lce.evaluate(model_settings, ds['test'],
     metrics=all_metrics[args.dataset],
     log_endpoint='non_exists!', # will fallback to filesystem current directory.
     manual_seed=42,
-    run_name=f'mistral_on_{args.dataset}'.replace('/', '_'),
+    run_name=f'phi2_on_{args.dataset}'.replace('/', '_'),
     skip_until=0,
     slow_mode=True
 )
