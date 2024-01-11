@@ -10,7 +10,8 @@ args = parser.parse_args()
 # Load
 from vllm import LLM, SamplingParams
 hgf_repo = "mistralai/Mistral-7B-Instruct-v0.2"
-vllm_model = LLM(model=hgf_repo, trust_remote_code=True, dtype='auto')
+vllm_model = LLM(model=hgf_repo, trust_remote_code=True, dtype='auto',
+    gpu_memory_utilization=0.6, max_model_len=32000)
 
 # Set
 import sys
@@ -24,7 +25,6 @@ model_settings = {
         top_p=1,
         top_k=-1,
         use_beam_search=False,
-        max_tokens=8192,
         presence_penalty=0,
         frequency_penalty=0,
     ),
