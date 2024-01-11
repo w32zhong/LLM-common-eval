@@ -59,9 +59,11 @@ support_set = lce.generate_support_set(
 )
 report = lce.evaluate(model_settings, ds['test'],
     data_adapter=lambda j: {
-        'input':lce.NLI_task.Qv1_fewshot(
-            j['hypothesis'], j['premise'],
-            [(j['hypothesis'], j['premise'], j['label']) for j in support_set]
+        'input': lce.llama2_model.prompt_QA(
+            lce.NLI_task.Qv1_fewshot(
+                j['hypothesis'], j['premise'],
+                [(j['hypothesis'], j['premise'], j['label']) for j in support_set]
+            )
         ),
         'label': str(j['label'])
     },
