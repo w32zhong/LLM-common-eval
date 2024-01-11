@@ -4,6 +4,7 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, required=True)
+parser.add_argument('--log_endpoint', type=str, default='non-exists!')
 args = parser.parse_args()
 
 # Load
@@ -92,7 +93,7 @@ all_metrics = {
 report = lce.evaluate(model_settings, ds['test'],
     data_adapter=data_adapters[args.dataset],
     metrics=all_metrics[args.dataset],
-    log_endpoint='non_exists!', # will fallback to filesystem current directory.
+    log_endpoint=args.log_endpoint, # will fallback to filesystem current directory.
     manual_seed=42,
     run_name=f'mistral_on_{args.dataset}'.replace('/', '_'),
     skip_until=0,
