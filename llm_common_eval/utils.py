@@ -68,7 +68,7 @@ class KeywordsAndRepeatingStopper(KeywordsStopper):
     def is_repeating(self, text):
         #with open('test/repeat.txt', 'r') as fh:
         #    text = fh.read()
-        for k in range(self.max_span):
+        for k in range(min(len(text), self.max_span)):
             subtext = ''.join(text[-k:].strip().split())
             repeater = self.find_repeater(subtext)
             count = subtext.count(repeater)
