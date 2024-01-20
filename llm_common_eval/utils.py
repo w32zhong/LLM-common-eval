@@ -41,6 +41,41 @@ class KeywordsStopper(StoppingCriteria):
         return StoppingCriteriaList([self])
 
 
+class KeywordsAndRepeatingStopper(KeywordsStopper):
+    def __init__(self, tokenizer, keywords, max_repeats=5, max_span=32):
+        super().__init__(tokenizer, keywords)
+        self.max_repeats = max_repeats
+        self.max_span = max_span
+
+    def __call__(self, input_ids, scores, **kwargs):
+        batch_text = []
+        for b, ids in enumerate(input_ids):
+            ids = ids[self.prompt_lengths[b]:]
+            text = self.tokenizer.decode(ids)
+            batch_text.append(text)
+        batch_stop = (self.is_stop(b) for b in batch_text)
+        batch_repeat = (self.is_repeating(b) for b in batch_text)
+        return all(batch_stop) or all(batch_repeat)
+
+    @staticmethod
+    def find_repeater(s):
+        i = (s+s)[1:-1].find(s)
+        if i == -1:
+            return s
+        else:
+            return s[:i+1]
+
+    def is_repeating(self, text):
+        for k in range(self.max_span):
+            subtext = text[-k:]
+            repeater = self.find_repeater(subtext)
+            count = subtext.count(repeater)
+            if count > self.max_repeats:
+                print('\n[repeats]', subtext, '|', repeater, '*', count)
+                return True
+        return False
+
+
 ####################
 # git information
 ####################
