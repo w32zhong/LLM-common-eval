@@ -42,9 +42,9 @@ class KeywordsStopper(StoppingCriteria):
 
 
 class KeywordsAndRepeatingStopper(KeywordsStopper):
-    def __init__(self, tokenizer, keywords, max_repeats=5, max_span=32):
+    def __init__(self, tokenizer, keywords, accept_prob=0.001, max_span=1600):
         super().__init__(tokenizer, keywords)
-        self.max_repeats = max_repeats
+        self.accept_prob = accept_prob
         self.max_span = max_span
 
     def __call__(self, input_ids, scores, **kwargs):
@@ -66,12 +66,15 @@ class KeywordsAndRepeatingStopper(KeywordsStopper):
             return s[:i+1]
 
     def is_repeating(self, text):
+        #with open('test/repeat.txt', 'r') as fh:
+        #    text = fh.read()
         for k in range(self.max_span):
-            subtext = text[-k:]
+            subtext = ''.join(text[-k:].strip().split())
             repeater = self.find_repeater(subtext)
             count = subtext.count(repeater)
-            if count > self.max_repeats:
-                print('\n[repeats]', subtext, '|', repeater, '*', count)
+            prob = 0.8 ** (len(repeater) * count)
+            if count > 1 and prob < self.accept_prob:
+                print('\n[repeats]', repeater, '*', count, 'prob=', prob)
                 return True
         return False
 
