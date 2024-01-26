@@ -69,6 +69,19 @@ def do_inference_trials(model_setting, adapt_data, n_trials, logger):
         logger(b, log)
 
 
+def data_generator(dataset, **kwargs):
+    from torch.utils.data import DataLoader
+    def genn():
+        if dataset is None: # interactive
+            while True:
+                prompt = input('Input: ')
+                yield [dict(prompt=prompt)]
+        else:
+            for data in DataLoader(dataset, **kwargs):
+                yield data
+    return genn
+
+
 def evaluate(model_setting, dataset, data_adapter, metrics,
     batch_size=1, collate_fn=collate_passthrough, skip_until=0,
     manual_seed=None, log_endpoint=None, run_name=None, slow_mode=False):
@@ -82,12 +95,11 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
         prefix, report_file = init_logging_prefix(log_fs, sys.argv[0])
     print('[listdir root]', log_fs.listdir('/'))
     # data loader
-    from torch.utils.data import DataLoader
-    dataloader = DataLoader(dataset,
+    N = len(dataset) if dataset is not None else -1
+    data_gen = data_generator(dataset,
         collate_fn=collate_fn, batch_size=batch_size)
-    N = len(dataset)
     # run through data
-    for i, batch_data in enumerate(dataloader):
+    for i, batch_data in enumerate(data_gen()):
         row_base = i * batch_size
         adapt_data = [data_adapter(x) for x in batch_data]
         # test whether to skip inference by looking at the log file
