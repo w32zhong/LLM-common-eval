@@ -2,7 +2,8 @@ import torch
 
 
 def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
-    streamer=None, stopper=None, generation_cfg=None, debug=False):
+    streamer=None, stopper=None, generation_cfg=None, debug=False,
+    model_stats_getter=lambda m: None):
     prompt = inp_data[0]
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs.to(model.device)
@@ -35,6 +36,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
             outputs=[dict(
                 out_text=stopper.rm_stop(out_text),
                 out_tokens=out_tokens.tolist(),
+                model_stats=model_stats_getter(model),
                 loss=loss
             )]
         )
