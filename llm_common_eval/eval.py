@@ -21,7 +21,8 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True)
+    # comment per https://discuss.pytorch.org/t/torch-deterministic-algorithms-error/125200/5
+    #torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.deterministic = True
 
 
