@@ -71,10 +71,12 @@ def do_inference_trials(model_setting, adapt_data, n_trials, logger):
 
 
 def data_generator(dataset, **kwargs):
+    import os
     from torch.utils.data import DataLoader
     def genn():
         if dataset is None: # interactive
             while True:
+                print("[process fd] /proc/{0}/fd/0".format(os.getpid()))
                 prompt = input('Input: ')
                 yield [dict(prompt=prompt)]
         else:
