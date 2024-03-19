@@ -36,7 +36,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
             outputs=[dict(
                 out_text=stopper.rm_stop(out_text),
                 out_tokens=out_tokens.tolist(),
-                model_stats=model_stats_getter(model),
+                _model_stats=model_stats_getter(model),
                 loss=loss
             )]
         )

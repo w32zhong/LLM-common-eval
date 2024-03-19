@@ -154,11 +154,15 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
                         # Multiple evaluation scripts are running?
                         print('[Empty log] Be sure to re-run evaluation!')
                         break
-            display_log = filter_by_key(log,
-                lambda k: not re.match(r"(.*)_tokens$", k))
-            print('[Evaluating]', log_path, json.dumps(display_log, indent=2))
+            # skip printing input_tokens and out_tokens
+            print_log = filter_by_key(log,
+                lambda k: k not in ['input_tokens', 'out_tokens'])
+            # skip printing anything starts with an underscore
+            print_log = filter_by_key(print_log,
+                lambda k: not re.match(r"^_.*", k))
+            print('[Evaluating]', log_path, json.dumps(print_log, indent=2))
             for metric in metrics:
-                if not metric.add_json_sample(log) is False:
+                if not (metric.add_json_sample(log) is False):
                     print('[Running metric]', metric.report())
     report = dict([(metric.name, metric.report()) for metric in metrics])
     # done
