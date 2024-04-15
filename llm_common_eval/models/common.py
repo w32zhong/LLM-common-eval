@@ -1,16 +1,16 @@
 import torch
 
 
-def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
+def hgf_inference_1batch(inp_text, exp_data, model=None, tokenizer=None,
     streamer=None, stopper=None, generation_cfg=None, debug=False,
     model_stats_getter=lambda m: None):
-    prompt = inp_data[0]
+    prompt = inp_text[0]
     inputs = tokenizer(prompt, return_tensors="pt")
     inputs.to(model.device)
     inp_tokens = inputs['input_ids'][0]
     inp_length = len(inp_tokens)
     with torch.no_grad():
-        if exp_data is not None:
+        if exp_data[0] is not None:
             prompt = exp_data[0]
             example_toks = tokenizer(prompt, return_tensors="pt")
             example_toks.to(model.device)
@@ -33,7 +33,7 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
         out_text = tokenizer.decode(out_tokens)
         return dict(
             input_tokens=[inp_tokens.tolist()],
-            outputs=[dict(
+            outputs=[dict( # out_dict
                 out_text=stopper.rm_stop(out_text),
                 out_tokens=out_tokens.tolist(),
                 _model_stats=model_stats_getter(model),
@@ -42,17 +42,17 @@ def hgf_inference_1batch(inp_data, exp_data, model=None, tokenizer=None,
         )
 
 
-def vllm_inference_1batch(inp_data, exp_data, vllm_model=None,
+def vllm_inference_1batch(inp_text, exp_data, vllm_model=None,
     sampling_params=None):
-    prompt = inp_data[0]
+    prompt = inp_text[0]
     output = vllm_model.generate(prompt, sampling_params, use_tqdm=False)[0]
     inp_tokens = output.prompt_token_ids
     out_text = output.outputs[0].text
     out_tokens = output.outputs[0].token_ids
-    loss = None if exp_data is None else output.outputs[0].cumulative_logprob
+    loss = None if exp_data[0] is None else output.outputs[0].cumulative_logprob
     return dict(
         input_tokens=[inp_tokens],
-        outputs=[dict(
+        outputs=[dict( # out_dict
             out_text=out_text,
             out_tokens=out_tokens,
             loss=loss

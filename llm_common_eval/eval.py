@@ -25,49 +25,59 @@ def set_seed(seed):
     torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.deterministic = True
 
-
 def collate_passthrough(batch_data):
     return batch_data
 
 
-def do_inference_trials(model_setting, adapt_data, n_trials, logger):
-    # input texts
-    inp_data = list(map(lambda x: x['input'], adapt_data))
-    # input example texts
-    if '_example' in adapt_data[0]:
-        list(map(lambda x: x.update({'example': x['_example'](x)}), adapt_data))
-        example_data = list(map(lambda x: x['example'], adapt_data))
-    else:
-        example_data = None
-    # other customer
-    custom_data = filter_by_key(adapt_data,
+def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
+    trials_and_turns = [[] for _ in batch_data]
+    custom_data = filter_by_key(batch_data,
         lambda k: k not in ['input', '_output_process', '_example'])
-    output_trials = [[] for _ in inp_data]
-    for t in range(n_trials):
-        print(f'[Inference trial#{t+1}]')
-        args = model_setting.copy()
-        args.pop('inference_fn')
-        time_begin = time.time()
-        result = model_setting['inference_fn'](inp_data, example_data, **args)
-        time_end = time.time()
-        for b, out in enumerate(result['outputs']):
-            time_cost = time_end - time_begin
-            out["time_cost"] = time_cost
-            if '_output_process' in adapt_data[0]:
-                processed = adapt_data[0]['_output_process'](out)
-            else:
-                processed = {}
-            output_trials[b].append({**out, **processed})
-    for b, (inp, inp_tokens, outs, custom) in enumerate(zip(
-        inp_data, result['input_tokens'], output_trials, custom_data)):
-        log = {
-            "exe_node": platform.node(),
-            "input": inp,
-            "input_tokens": inp_tokens,
-            "output_trials": outs,
-            **custom
-        }
-        logger(b, log)
+    for trial in range(n_trials):
+        turn = 0
+        keep_going = True
+        while keep_going: # multi-turns
+            print(f'[Inference trial#{trial+1}, turn#{turn+1}]')
+            # input texts
+            adapt_data = [
+                data_adapter(x, hist=trials_and_turns[b])
+                for b, x in enumerate(batch_data)
+            ]
+            # input batched texts
+            inp_text = list(map(lambda x: x['input'], adapt_data))
+            # input example texts
+            exp_data = []
+            for x in batch_data:
+                if x is not None and '_example' in x:
+                    exp_data.append(x['_example'](x))
+                else:
+                    exp_data.append(None)
+            # do inference
+            args = model_setting.copy()
+            args.pop('inference_fn')
+            time_begin = time.time()
+            result = model_setting['inference_fn'](inp_text, exp_data, **args)
+            time_end = time.time()
+            # add timecost and post-processing
+            keep_going = False
+            for b, out_dict in enumerate(result['outputs']):
+                if out_dict is None: continue
+                time_cost = time_end - time_begin
+                out_dict["time_cost"] = time_cost
+                if '_output_process' in adapt_data[0]:
+                    processed = adapt_data[0]['_output_process'](out_dict)
+                else:
+                    processed = {}
+                trials_and_turns[b].append({
+                    'trial': trial,
+                    'turn': turn,
+                    'input': inp_text[b],
+                    **out_dict, **processed
+                })
+                keep_going = True
+            if multi_turn: keep_going = False
+        turn += 1
+    return trials_and_turns, custom_data
 
 
 def data_generator(dataset, **kwargs):
@@ -85,8 +95,8 @@ def data_generator(dataset, **kwargs):
     return genn
 
 
-def evaluate(model_setting, dataset, data_adapter, metrics,
-    batch_size=1, collate_fn=collate_passthrough, skip_until=0,
+def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
+    collate_fn=collate_passthrough, skip_until=0, multi_turn=False,
     manual_seed=None, log_endpoint=None, run_name=None, slow_mode=False):
     # initialize
     n_trials = max([m.n_trials for m in metrics])
@@ -104,7 +114,6 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
     # run through data
     for i, batch_data in enumerate(data_gen()):
         row_base = i * batch_size
-        adapt_data = [data_adapter(x) for x in batch_data]
         # test whether to skip inference by looking at the log file
         log_path = f'{prefix}/{n_trials}trial-row{row_base}'
         skip_infer_this_batch = False
@@ -126,23 +135,33 @@ def evaluate(model_setting, dataset, data_adapter, metrics,
             with log_fs.open(f'{log_path}.json', 'w') as fh:
                 fh.flush()
         # perform inference only if the previous step is not skipped
-        fresh_logs = {}
-        def logger(batch, log):
-            row = row_base + batch
-            log_path = f'{prefix}/{n_trials}trial-row{row}'
-            fresh_logs[log_path] = log
-            with log_fs.open(f'{log_path}.json', 'w') as fh:
-                json.dump(log, fh, indent=2)
-                fh.flush()
+        fresh_log_paths = {}
         if skip_infer_this_batch:
             print(f'[Inference skipped] {log_path} + {batch_size} / {N}')
         else:
             print(f'[Inference] {log_path} + {batch_size} / {N}')
-            do_inference_trials(model_setting, adapt_data, n_trials, logger)
+            trials_and_turns, custom_data = do_inference(
+                model_setting, batch_data, data_adapter,
+                n_trials, multi_turn, logger
+            )
+            for b, (hist, cd) in enumerate(zip(trials_and_turns, custom_data)):
+                row = row_base + b
+                log_path = f'{prefix}/{n_trials}trial-row{row}'
+                log = {
+                    "exe_node": platform.node(),
+                    "input": hist[0]['input'],
+                    "input_tokens": hist[0]['input_tokens'],
+                    "output_trials": hist,
+                    **cd
+                }
+                with log_fs.open(f'{log_path}.json', 'w') as fh:
+                    json.dump(log, fh, indent=2)
+                    fh.flush()
+                fresh_log_paths[log_path] = True
         # evaluate
         for row in range(row_base, row_base + batch_size):
             log_path = f'{prefix}/{n_trials}trial-row{row}'
-            if log_path in fresh_logs:
+            if log_path in fresh_log_paths:
                 # use fresh logs to avoid reading back from files
                 log = fresh_logs[log_path]
             else:
