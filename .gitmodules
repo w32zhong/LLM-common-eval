@@ -1,0 +1,3 @@
+[submodule "llm_common_eval/datasets/mt_bench"]
+	path = llm_common_eval/datasets/mt_bench
+	url = git@github.com:lm-sys/FastChat.git
