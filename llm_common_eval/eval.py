@@ -79,7 +79,7 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
                 })
                 keep_going = True
             if not multi_turn: keep_going = False
-        turn += 1
+            turn += 1
     return trials_and_turns, custom_data
 
 
