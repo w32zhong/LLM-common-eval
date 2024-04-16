@@ -41,6 +41,8 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
             # input texts
             adapt_data = [
                 data_adapter(x, hist=trials_and_turns[b])
+                if len(trials_and_turns[b]) > 0 else
+                data_adapter(x) # for back compatibility
                 for b, x in enumerate(batch_data)
             ]
             # input batched texts
@@ -72,10 +74,11 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
                     'trial': trial,
                     'turn': turn,
                     'input': inp_text[b],
+                    'input_tokens': result['input_tokens'][b],
                     **out_dict, **processed
                 })
                 keep_going = True
-            if multi_turn: keep_going = False
+            if not multi_turn: keep_going = False
         turn += 1
     return trials_and_turns, custom_data
 
@@ -135,14 +138,13 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
             with log_fs.open(f'{log_path}.json', 'w') as fh:
                 fh.flush()
         # perform inference only if the previous step is not skipped
-        fresh_log_paths = {}
+        fresh_log = {}
         if skip_infer_this_batch:
             print(f'[Inference skipped] {log_path} + {batch_size} / {N}')
         else:
             print(f'[Inference] {log_path} + {batch_size} / {N}')
             trials_and_turns, custom_data = do_inference(
-                model_setting, batch_data, data_adapter,
-                n_trials, multi_turn, logger
+                model_setting, batch_data, data_adapter, n_trials, multi_turn
             )
             for b, (hist, cd) in enumerate(zip(trials_and_turns, custom_data)):
                 row = row_base + b
@@ -157,13 +159,13 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
                 with log_fs.open(f'{log_path}.json', 'w') as fh:
                     json.dump(log, fh, indent=2)
                     fh.flush()
-                fresh_log_paths[log_path] = True
+                fresh_log[log_path] = log
         # evaluate
         for row in range(row_base, row_base + batch_size):
             log_path = f'{prefix}/{n_trials}trial-row{row}'
-            if log_path in fresh_log_paths:
+            if log_path in fresh_log:
                 # use fresh logs to avoid reading back from files
-                log = fresh_logs[log_path]
+                log = fresh_log[log_path]
             else:
                 # read back logs from json files
                 with log_fs.open(f'{log_path}.json', 'r') as fh:
