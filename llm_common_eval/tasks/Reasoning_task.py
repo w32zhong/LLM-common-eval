@@ -8,3 +8,7 @@ Choice 1: {choices[0]}
 Choice 2: {choices[1]}
 
 ## Response:'''
+
+
+def Qv1_GSM8K(prompt):
+    return f'''Answer a math question along with your reasoning, indicate the final solution at the final line of your output following a "####".\n''' + prompt + '\n'
