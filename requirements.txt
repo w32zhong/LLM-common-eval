@@ -11,3 +11,4 @@ nltk
 rouge_score
 bert-score
 bitsandbytes
+fastchat
