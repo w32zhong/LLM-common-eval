@@ -49,7 +49,7 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
             inp_text = list(map(lambda x: x['input'], adapt_data))
             # input example texts
             exp_data = []
-            for x in batch_data:
+            for x in adapt_data:
                 if x is not None and '_example' in x:
                     exp_data.append(x['_example'](x))
                 else:
