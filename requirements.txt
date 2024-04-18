@@ -12,3 +12,5 @@ rouge_score
 bert-score
 bitsandbytes
 fastchat
+openai
+anthropic
