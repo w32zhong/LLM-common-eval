@@ -31,7 +31,7 @@ def collate_passthrough(batch_data):
 
 def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
     trials_and_turns = [[] for _ in batch_data]
-    custom_data = filter_by_key(batch_data,
+    custom_data = filter_by_key([data_adapter(x) for x in batch_data],
         lambda k: k not in ['input', '_output_process', '_example'])
     for trial in range(n_trials):
         turn = 0
