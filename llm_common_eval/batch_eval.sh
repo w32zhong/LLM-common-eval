@@ -20,7 +20,7 @@ waitfor_experiments() {
             tmux capture-pane -pt $exp -S -100 # show the last 100 lines
             set +x
             tput bold setaf 1
-            echo "Waiting for tmux session: $exp ..."
+            echo "Waiting for tmux session $exp in $@ ..."
             tput sgr0
             sleep 5;
         done
