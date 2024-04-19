@@ -4,3 +4,6 @@
 [submodule "llm_common_eval/datasets/human_eval"]
 	path = llm_common_eval/datasets/human_eval
 	url = https://github.com/openai/human-eval
+[submodule "llm_common_eval/datasets/gsm8k"]
+	path = llm_common_eval/datasets/gsm8k
+	url = git@github.com:openai/grade-school-math.git
