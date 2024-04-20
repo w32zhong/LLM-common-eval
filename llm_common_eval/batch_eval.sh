@@ -15,8 +15,7 @@ detached_experiment() {
         tmux send-keys -t $SESSION_ID "conda activate $CONDA_DEFAULT_ENV" Enter
     fi
     tmux send-keys -t $SESSION_ID "export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" Enter
-    tmux send-keys -t $SESSION_ID "$CMD" Enter
-    tmux send-keys -t $SESSION_ID "exit" Enter
+    tmux send-keys -t $SESSION_ID "$CMD; exit" Enter
 }
 
 waitfor_experiments() {
