@@ -1,22 +1,27 @@
+from functools import partial
 import torch
 
 
 def hgf_inference_1batch(inp_text, exp_data, model=None, tokenizer=None,
     streamer=None, stopper=None, generation_cfg=None, debug=False,
-    model_stats_getter=lambda m: None):
+    tokenizer_encode_kwargs={}, model_stats_getter=lambda m: None):
     prompt = inp_text[0]
     if prompt is None:
         out_dict = None
         inp_tokens = None
     else:
-        inputs = tokenizer(prompt, return_tensors="pt")
+        encode_fn = partial(tokenizer,
+            return_tensors="pt",
+            **tokenizer_encode_kwargs
+        )
+        inputs = encode_fn(prompt)
         inputs.to(model.device)
         inp_tokens = inputs['input_ids'][0].tolist()
         inp_length = len(inp_tokens)
         with torch.no_grad():
             if exp_data[0] is not None:
                 prompt = exp_data[0]
-                example_toks = tokenizer(prompt, return_tensors="pt")
+                example_toks = encode_fn(prompt)
                 example_toks.to(model.device)
                 example_inp_ids = example_toks['input_ids']
                 example_trg_ids = example_inp_ids.clone()
