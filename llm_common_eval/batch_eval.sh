@@ -5,16 +5,13 @@ detached_experiment() {
     shift 1
     CMD=${@-ls}
     tput bold setaf 3
-    echo -n "[new session=$SESSION_ID, conda_env=$CONDA_DEFAULT_ENV] "
+    echo -n "[$SESSION_ID, conda_env=$CONDA_DEFAULT_ENV, devs=$CUDA_VISIBLE_DEVICES] "
     tput bold setaf 4
     echo $CMD
     tput sgr0
     tmux kill-session -t $SESSION_ID &> /dev/null
     tmux new-session -c `pwd` -s $SESSION_ID -d
     if [[ ! -z $CONDA_DEFAULT_ENV ]]; then
-        tput bold setaf 2
-        echo "[conda activate $CONDA_DEFAULT_ENV]"
-        tput sgr0
         tmux send-keys -t $SESSION_ID "conda activate $CONDA_DEFAULT_ENV" Enter
     fi
     tmux send-keys -t $SESSION_ID "export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" Enter
