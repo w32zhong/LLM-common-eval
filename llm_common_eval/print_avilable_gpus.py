@@ -1,9 +1,11 @@
 import fire
+import sys
 import os
 from torch import cuda
 
 
-def print_available_gpus(total=None, n=None, print_used_count=False):
+def print_available_gpus(total=None, n=None,
+    print_used_count=False, print_to_file='/dev/stdout'):
     total = cuda.device_count() if total is None else total
     all_gpus = [cuda.device(i) for i in range(total)]
     avail_gpus = []
@@ -15,10 +17,11 @@ def print_available_gpus(total=None, n=None, print_used_count=False):
             avail_gpus.append(str(i))
     if n is None: n = total
     result = avail_gpus[:n]
-    if print_used_count:
-        print(total - len(result))
-    else:
-        print(','.join(result))
+    with open(print_to_file, 'w') as fh:
+        if print_used_count:
+            print(total - len(result), file=fh)
+        else:
+            print(','.join(result), file=fh)
 
 
 if __name__ == '__main__':
