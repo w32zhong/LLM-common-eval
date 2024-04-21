@@ -3,7 +3,8 @@
 detached_experiment() {
     SESSION_ID=${1-default_session_id}
     shift 1
-    CMD=${@-ls}
+    CMD="${@-ls}"
+    CMD="$(eval echo $CMD)"
     tput bold setaf 3
     echo -n "[$SESSION_ID, conda_env=$CONDA_DEFAULT_ENV, devs=$CUDA_VISIBLE_DEVICES] "
     tput bold setaf 4
