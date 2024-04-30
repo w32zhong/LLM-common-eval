@@ -25,8 +25,8 @@ def prompt_fewshots_QA(Q, support_set, tokenizer=None):
             {"role": "user", "content": Q}
         )
         prompt = tokenizer.apply_chat_template(messages, tokenize=False)
-        prompt = prompt.strip('<s>')
-        prompt = prompt.strip('</s>')
+        prompt = prompt.replace('<s>', '')
+        prompt = prompt.replace('</s>', '')
     else:
         raise NotImplemented
     return prompt
