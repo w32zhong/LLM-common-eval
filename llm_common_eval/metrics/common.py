@@ -185,7 +185,7 @@ class Perplexity(MetricBase):
     def calc_ppl(self, loss):
         # loss: (1/N) sum_i^N log p(label_i)
         # ref: https://huggingface.co/docs/transformers/perplexity
-        return math.exp(loss)
+        return math.exp(loss) if loss is not None else -1
 
     def add_json_sample(self, j):
         perplexities = [
