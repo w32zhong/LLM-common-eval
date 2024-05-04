@@ -28,5 +28,9 @@ def prompt_fewshots_QA(Q, support_set, tokenizer=None):
         prompt = prompt.replace('<s>', '')
         prompt = prompt.replace('</s>', '')
     else:
-        raise NotImplemented
+        prompt = ''
+        for example_Q, example_A in support_set:
+            prompt += f'[INST] {Q} [/INST] '
+            prompt += f'{example_A} '
+        prompt += f'[INST] {Q} [/INST]'
     return prompt
