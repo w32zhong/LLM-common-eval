@@ -5,6 +5,7 @@ import time
 import platform
 from json.decoder import JSONDecodeError
 from collections import defaultdict
+from colorama import Fore, Style
 from .utils import setup_endpoint, init_logging_prefix, filter_by_key
 
 
@@ -58,6 +59,7 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
             args = model_setting.copy()
             args.pop('inference_fn')
             time_begin = time.time()
+            print(f'{Fore.BLUE}{inp_text}{Style.RESET_ALL}')
             result = model_setting['inference_fn'](inp_text, exp_data, **args)
             time_end = time.time()
             # add timecost and post-processing
