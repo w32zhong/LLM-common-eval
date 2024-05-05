@@ -236,3 +236,28 @@ class ROUGE(MetricBase):
             samples=samples,
             mean_scores=mean_scores
         )
+
+
+class VRAM_Usage():
+    def __init__(self, name='VRAM'):
+        self.name = name
+        self.samples = []
+        self.n_trials = 1
+
+    def add_json_sample(self, j):
+        self.samples.append((j['vram_base'], j['vram_peak']))
+
+    def report(self):
+        min_load_vram = min([x[0] for x in self.samples])
+        mean_peak_vram = statistics.mean([x[1] for x in self.samples])
+        max_peak_vram = max([x[1] for x in self.samples])
+        if len(self.samples) >= 2:
+            var_peak_vram = statistics.std([x[1] for x in self.samples])
+        else:
+            var_peak_vram = -1
+        return dict(name=self.name,
+            min_load_vram=min_load_vram,
+            mean_peak_vram=mean_peak_vram,
+            max_peak_vram=max_peak_vram,
+            var_peak_vram=var_peak_vram
+        )

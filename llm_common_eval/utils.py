@@ -295,3 +295,16 @@ def string_spans_wrapper(x, spans, wrapper=('[[', ']]')):
         else:
             accum += 2
     return x
+
+
+#####################
+# CUDA VRAM Monitor
+#####################
+def reset_vram_monitor():
+    import torch
+    torch.cuda.empty_cache()
+    torch.cuda.reset_max_memory_allocated()
+
+def get_vram_peak():
+    import torch
+    return torch.cuda.max_memory_allocated() / (1024 ** 3)

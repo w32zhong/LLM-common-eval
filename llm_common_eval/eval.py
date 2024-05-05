@@ -7,6 +7,7 @@ from json.decoder import JSONDecodeError
 from collections import defaultdict
 from colorama import Fore, Style
 from .utils import setup_endpoint, init_logging_prefix, filter_by_key
+from .utils import reset_vram_monitor, get_vram_peak
 
 
 def set_seed(seed):
@@ -145,14 +146,19 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
             print(f'[Inference skipped] {log_path} + {batch_size} / {N}')
         else:
             print(f'[Inference] {log_path} + {batch_size} / {N}')
+            reset_vram_monitor()
+            vram_base = get_vram_peak()
             trials_and_turns, custom_data = do_inference(
                 model_setting, batch_data, data_adapter, n_trials, multi_turn
             )
+            vram_peak = get_vram_peak()
             for b, (hist, cd) in enumerate(zip(trials_and_turns, custom_data)):
                 row = row_base + b
                 log_path = f'{prefix}/{n_trials}trial-row{row}'
                 log = {
                     "exe_node": platform.node(),
+                    "vram_base": vram_base,
+                    "vram_peak": vram_peak,
                     "input": hist[0]['input'],
                     "input_tokens": hist[0]['input_tokens'],
                     "output_trials": hist,
