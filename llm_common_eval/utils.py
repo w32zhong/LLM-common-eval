@@ -175,8 +175,9 @@ def setup_endpoint(endpoint):
         bucket = cfg[endpoint]['bucket']
         endpoint_url = cfg[endpoint]['endpoint_url']
         fs = RemoteS3LogFS(endpoint_url, bucket)
+    elif endpoint == '/tmp':
+        fs = LocalLogFS('/tmp')
     else:
-        print('Warnining: Cloud not find endpoint, use local logging.')
         fs = LocalLogFS('./logs')
     return fs
 
