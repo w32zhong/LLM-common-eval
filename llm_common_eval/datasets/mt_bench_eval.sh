@@ -3,9 +3,11 @@
 LOGDIR=$1
 name=foo
 
-cp mt_bench_* mt_bench/fastchat/llm_judge
+#pip uninstall -y fschat
+source .env
+cp mt_bench.patch mt_bench/fastchat/llm_judge
 cd mt_bench/fastchat/llm_judge
-git apply mt_bench_mock_judge.patch
+git apply mt_bench.patch
 mkdir -p ./data/mt_bench/model_answer
 python mt_bench_convert.py $LOGDIR $name.jsonl
 rm -rf data/mt_bench/model_judgment/

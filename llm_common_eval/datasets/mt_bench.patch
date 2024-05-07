@@ -1,0 +1,60 @@
+diff --git a/fastchat/llm_judge/common.py b/fastchat/llm_judge/common.py
+index d2640d6..b77dc2e 100644
+--- a/fastchat/llm_judge/common.py
++++ b/fastchat/llm_judge/common.py
+@@ -164,14 +164,28 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
+     conv.append_message(conv.roles[1], None)
+ 
+     if model in OPENAI_MODEL_LIST:
+-        judgment = chat_completion_openai(model, conv, temperature=0, max_tokens=2048)
+-    elif model in ANTHROPIC_MODEL_LIST:
+-        judgment = chat_completion_anthropic(
+-            model, conv, temperature=0, max_tokens=1024
+-        )
++    #    judgment = chat_completion_openai(model, conv, temperature=0, max_tokens=2048)
++    #elif model in ANTHROPIC_MODEL_LIST:
++    #    judgment = chat_completion_anthropic(
++    #        model, conv, temperature=0, max_tokens=1024
++    #    )
++    #elif model == 'gemini':
++        import time
++        import google.generativeai as genai
++        GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
++        assert GOOGLE_API_KEY is not None
++        genai.configure(api_key=GOOGLE_API_KEY)
++        model = genai.GenerativeModel('gemini-1.0-pro')
++        prompt = conv.get_prompt()
++        response = model.generate_content(prompt)
++        judgment = response.text
++        time.sleep(0.5)
+     else:
+         raise ValueError(f"Invalid judge model name: {model}")
+ 
++    #breakpoint()
++    #judgment = '[9]'
++
+     if judge.prompt_template["output_format"] == "[[rating]]":
+         match = re.search(one_score_pattern, judgment)
+         if not match:
+diff --git a/fastchat/llm_judge/gen_judgment.py b/fastchat/llm_judge/gen_judgment.py
+index a1c70b2..d3bb276 100644
+--- a/fastchat/llm_judge/gen_judgment.py
++++ b/fastchat/llm_judge/gen_judgment.py
+@@ -9,6 +9,8 @@ import json
+ import numpy as np
+ from tqdm import tqdm
+ 
++import sys
++sys.path.insert(0, '../..')
+ from fastchat.llm_judge.common import (
+     load_questions,
+     load_model_answers,
+@@ -301,7 +303,7 @@ if __name__ == "__main__":
+     # Show match stats and prompt enter to continue
+     print("Stats:")
+     print(json.dumps(match_stat, indent=4))
+-    input("Press Enter to confirm...")
++    #input("Press Enter to confirm...")
+ 
+     # Play matches
+     if args.parallel == 1:
