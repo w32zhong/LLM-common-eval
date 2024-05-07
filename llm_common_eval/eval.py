@@ -27,6 +27,7 @@ def set_seed(seed):
     torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.deterministic = True
 
+
 def collate_passthrough(batch_data):
     return batch_data
 
