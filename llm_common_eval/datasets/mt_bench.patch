@@ -1,8 +1,8 @@
 diff --git a/fastchat/llm_judge/common.py b/fastchat/llm_judge/common.py
-index d2640d6..b77dc2e 100644
+index d2640d6..6085d6f 100644
 --- a/fastchat/llm_judge/common.py
 +++ b/fastchat/llm_judge/common.py
-@@ -164,14 +164,28 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
+@@ -164,14 +164,34 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
      conv.append_message(conv.roles[1], None)
  
      if model in OPENAI_MODEL_LIST:
@@ -24,14 +24,20 @@ index d2640d6..b77dc2e 100644
 +        genai.configure(api_key=GOOGLE_API_KEY)
 +        model = genai.GenerativeModel('gemini-1.0-pro')
 +        prompt = conv.get_prompt()
-+        response = model.generate_content(prompt)
-+        judgment = response.text
++        max_retry = 3
++        while max_retry > 0:
++            try:
++                response = model.generate_content(prompt)
++                judgment = response.text
++            except Exception as e:
++                max_retry -= 1
++                judgment = '[0]'
++                print('[retry]', e)
 +        time.sleep(0.5)
      else:
          raise ValueError(f"Invalid judge model name: {model}")
  
 +    #breakpoint()
-+    #judgment = '[9]'
 +
      if judge.prompt_template["output_format"] == "[[rating]]":
          match = re.search(one_score_pattern, judgment)

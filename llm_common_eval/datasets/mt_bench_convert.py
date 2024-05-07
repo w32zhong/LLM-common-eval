@@ -26,7 +26,7 @@ def covert(inp_logdir, jsonl_name, out_dir='./data/mt_bench/model_answer'):
                     {"turns": turns}
                 ]
             }
-            print('[convert]', file)
+            #print('[convert]', file)
             fh.write(json.dumps(json_out))
             fh.write('\n')
 
