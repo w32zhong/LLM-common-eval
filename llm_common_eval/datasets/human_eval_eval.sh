@@ -22,7 +22,9 @@ function convert() {
 function evaluate() {
     pushd human_eval
     for file in ./data/experiment-*.jsonl; do
+        set -x
         python -m human_eval.evaluate_functional_correctness $file
+        set +x
     done
     popd
 }
