@@ -1,5 +1,5 @@
 diff --git a/fastchat/llm_judge/common.py b/fastchat/llm_judge/common.py
-index d2640d6..6085d6f 100644
+index d2640d6..321a8a6 100644
 --- a/fastchat/llm_judge/common.py
 +++ b/fastchat/llm_judge/common.py
 @@ -164,14 +164,34 @@ def run_judge_single(question, answer, judge, ref_answer, multi_turn=False):
@@ -24,14 +24,14 @@ index d2640d6..6085d6f 100644
 +        genai.configure(api_key=GOOGLE_API_KEY)
 +        model = genai.GenerativeModel('gemini-1.0-pro')
 +        prompt = conv.get_prompt()
-+        max_retry = 3
-+        while max_retry > 0:
++        while True:
 +            try:
++                print('[question]', question["question_id"])
 +                response = model.generate_content(prompt)
++                print(response.text)
 +                judgment = response.text
++                break
 +            except Exception as e:
-+                max_retry -= 1
-+                judgment = '[0]'
 +                print('[retry]', e)
 +        time.sleep(0.5)
      else:
