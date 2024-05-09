@@ -64,3 +64,15 @@ index a1c70b2..d3bb276 100644
  
      # Play matches
      if args.parallel == 1:
+diff --git a/fastchat/llm_judge/show_result.py b/fastchat/llm_judge/show_result.py
+index f20801b..20fe132 100644
+--- a/fastchat/llm_judge/show_result.py
++++ b/fastchat/llm_judge/show_result.py
+@@ -4,6 +4,7 @@ python3 show_result.py --mode [single|pairwise-baseline|pairwise-all]
+ """
+ import argparse
+ import pandas as pd
++pd.set_option('display.max_colwidth', None)
+ 
+ 
+ def display_result_single(args):
