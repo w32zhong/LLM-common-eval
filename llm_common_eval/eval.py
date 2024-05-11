@@ -2,6 +2,7 @@ import re
 import sys
 import json
 import time
+import torch
 import platform
 from json.decoder import JSONDecodeError
 from collections import defaultdict
@@ -12,7 +13,6 @@ from .utils import reset_vram_monitor, get_vram_peak
 
 def set_seed(seed):
     if seed is None: return
-    import torch
     import random
     import numpy as np
     from transformers import set_seed
@@ -33,6 +33,8 @@ def collate_passthrough(batch_data):
 
 
 def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
+    reset_vram_monitor()
+    vram_base, vram_peak = get_vram_peak(), None
     trials_and_turns = [[] for _ in batch_data]
     custom_data = filter_by_key([data_adapter(x) for x in batch_data],
         lambda k: k not in ['input', '_output_process', '_example'])
@@ -60,12 +62,17 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
             # do inference
             args = model_setting.copy()
             args.pop('inference_fn')
-            time_begin = time.time()
             print(f'{Fore.BLUE}{inp_text}{Style.RESET_ALL}')
-            result = model_setting['inference_fn'](inp_text, exp_data, **args)
+            keep_going = False
+            time_begin = time.time()
+            try:
+                result = model_setting['inference_fn'](inp_text, exp_data, **args)
+            except torch.cuda.OutOfMemoryError as e:
+                print(f'{Fore.RED}[Out of VRAMM]{Style.RESET_ALL}', e)
+                result = dict(input_tokens=[None], outputs=[None])
+                vram_peak = -1
             time_end = time.time()
             # add timecost and post-processing
-            keep_going = False
             for b, out_dict in enumerate(result['outputs']):
                 if out_dict is None: continue
                 time_cost = time_end - time_begin
@@ -84,7 +91,8 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
                 keep_going = True
             if not multi_turn: keep_going = False
             turn += 1
-    return trials_and_turns, custom_data
+    vram_peak = get_vram_peak() if vram_peak is None else float('inf')
+    return trials_and_turns, custom_data, vram_base, vram_peak
 
 
 def data_generator(dataset, **kwargs):
@@ -147,12 +155,9 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
             print(f'[Inference skipped] {log_path} + {batch_size} / {N}')
         else:
             print(f'[Inference] {log_path} + {batch_size} / {N}')
-            reset_vram_monitor()
-            vram_base = get_vram_peak()
-            trials_and_turns, custom_data = do_inference(
+            trials_and_turns, custom_data, vram_base, vram_peak = do_inference(
                 model_setting, batch_data, data_adapter, n_trials, multi_turn
             )
-            vram_peak = get_vram_peak()
             for b, (hist, cd) in enumerate(zip(trials_and_turns, custom_data)):
                 row = row_base + b
                 log_path = f'{prefix}/{n_trials}trial-row{row}'
@@ -160,8 +165,8 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
                     "exe_node": platform.node(),
                     "vram_base": vram_base,
                     "vram_peak": vram_peak,
-                    "input": hist[0]['input'],
-                    "input_tokens": hist[0]['input_tokens'],
+                    "input": hist[0]['input'] if hist else None,
+                    "input_tokens": hist[0]['input_tokens'] if hist else None,
                     "output_trials": hist,
                     **cd
                 }
@@ -191,9 +196,10 @@ def evaluate(model_setting, dataset, data_adapter, metrics, batch_size=1,
             print_log = filter_by_key(print_log,
                 lambda k: not re.match(r"^_.*", k))
             print('[Evaluating]', log_path, json.dumps(print_log, indent=2))
-            for metric in metrics:
-                if not (metric.add_json_sample(log) is False):
-                    print('[Running metric]', metric.report())
+            if len(log['output_trials']) > 0:
+                for metric in metrics:
+                    if not (metric.add_json_sample(log) is False):
+                        print('[Running metric]', metric.report())
     report = dict([(metric.name, metric.report()) for metric in metrics])
     # done
     with log_fs.open(report_file, 'r') as fh:
