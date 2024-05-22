@@ -12,7 +12,9 @@ function convert() {
     for logdir in $LOGDIR; do
         if [[ "$logdir" =~ human-eval ]]; then
             name=$(basename $logdir)
-            python human_eval_convert.py $logdir $name.jsonl \
+            python human_eval_convert.py extract_problems $logdir problems-$name.jsonl \
+                --out_dir $outdir
+            python human_eval_convert.py convert $logdir $name.jsonl \
                 --out_dir $outdir
         fi
     done

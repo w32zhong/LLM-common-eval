@@ -15,7 +15,7 @@ def log_files(inp_logdir):
             yield file, json_log
 
 
-def covert(inp_logdir, jsonl_name, out_dir='./human_eval/data'):
+def convert(inp_logdir, jsonl_name, out_dir='./human_eval/data'):
     out_jsonl = os.path.join(out_dir, jsonl_name)
     with open(out_jsonl, 'w') as fh:
         for file, json_log in log_files(inp_logdir):
@@ -28,6 +28,15 @@ def covert(inp_logdir, jsonl_name, out_dir='./human_eval/data'):
             fh.write('\n')
 
 
+def extract_problems(inp_logdir, jsonl_name, out_dir='./human_eval/data'):
+    out_jsonl = os.path.join(out_dir, jsonl_name)
+    with open(out_jsonl, 'w') as fh:
+        for file, json_log in log_files(inp_logdir):
+            json_out = json_log['problem']
+            fh.write(json.dumps(json_out))
+            fh.write('\n')
+
+
 if __name__ == '__main__':
     import fire
-    fire.Fire(covert)
+    fire.Fire(dict(convert=convert, extract_problems=extract_problems))
