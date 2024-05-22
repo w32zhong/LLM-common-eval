@@ -78,15 +78,13 @@ def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
                 time_cost = time_end - time_begin
                 out_dict["time_cost"] = time_cost
                 if '_output_process' in adapt_data[0]:
-                    processed = adapt_data[0]['_output_process'](out_dict)
-                else:
-                    processed = {}
+                    out_dict = adapt_data[0]['_output_process'](out_dict)
                 trials_and_turns[b].append({
                     'trial': trial,
                     'turn': turn,
                     'input': inp_text[b],
                     'input_tokens': result['input_tokens'][b],
-                    **out_dict, **processed
+                    **out_dict
                 })
                 keep_going = True
             if not multi_turn: keep_going = False
