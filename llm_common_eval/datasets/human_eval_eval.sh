@@ -7,6 +7,13 @@ function init() {
     popd
 }
 
+function reset() {
+    cp human_eval.patch human_eval/
+    pushd human_eval
+    git checkout .
+    popd
+}
+
 function convert() {
     outdir='./human_eval/data'
     for logdir in $LOGDIR; do
@@ -34,3 +41,4 @@ function evaluate() {
 init
 convert
 evaluate
+reset

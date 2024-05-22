@@ -1,8 +1,16 @@
 diff --git a/human_eval/execution.py b/human_eval/execution.py
-index bc509f5..144776f 100644
+index bc509f5..80b57ec 100644
 --- a/human_eval/execution.py
 +++ b/human_eval/execution.py
-@@ -45,17 +45,7 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
+@@ -19,7 +19,6 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
+     :param completion_id: an optional completion ID so we can match
+         the results later even if execution finishes asynchronously.
+     """
+-
+     def unsafe_execute():
+ 
+         with create_tempdir():
+@@ -45,23 +44,17 @@ def check_correctness(problem: Dict, completion: str, timeout: float,
                  exec_globals = {}
                  with swallow_io():
                      with time_limit(timeout):
@@ -21,3 +29,13 @@ index bc509f5..144776f 100644
                  result.append("passed")
              except TimeoutException:
                  result.append("timed out")
+             except BaseException as e:
+                 result.append(f"failed: {e}")
+ 
++            print('\033[93m', '-'*30, '\033[0m')
++            print(check_program)
++            print('\033[93m', result, '\033[0m')
++
+             # Needed for cleaning up.
+             shutil.rmtree = rmtree
+             os.rmdir = rmdir

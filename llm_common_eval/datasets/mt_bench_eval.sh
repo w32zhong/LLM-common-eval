@@ -11,6 +11,12 @@ function init() {
     popd
 }
 
+function reset() {
+    pushd mt_bench
+    git checkout .
+    popd
+}
+
 function convert() {
     outdir=./mt_bench/fastchat/llm_judge/data/mt_bench/model_answer
     for logdir in $LOGDIR; do
@@ -37,3 +43,4 @@ function evaluate() {
 init
 convert
 evaluate
+reset
