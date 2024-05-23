@@ -41,9 +41,10 @@ waitfor_experiments() {
 function block_until_set_available_devices() {
     assigner="$1"
     db_file="$2"
-    runid=$3
-    budget=$4
-    shift 4
+    output_file="$3"
+    runid=$4
+    budget=$5
+    shift 5
     devs=""
     while [[ -z "$devs" ]]; do
         experiments="$(tmux list-sessions -F '#S' -f '#{m:exp*,#S}')"
@@ -51,8 +52,8 @@ function block_until_set_available_devices() {
         echo '[to inspect] tmux capture-pane -pt <experiment>'
         bash -c "$assigner refresh $experiments --db_file $db_file"
         bash -c "$assigner allocate $runid $budget --verbose True \
-            --db_file $db_file --output_file /tmp/gpu_assigner_output.txt"
-        devs=$(cat /tmp/gpu_assigner_output.txt)
+            --db_file $db_file --output_file $output_file"
+        devs=$(cat $output_file)
         echo "[assigned available devices] $devs"
         sleep 5
     done
