@@ -37,3 +37,22 @@ waitfor_experiments() {
 # detached_experiment exp1 sleep 5
 # detached_experiment exp2 sleep 12
 # waitfor_experiments exp1 exp2
+
+function block_until_set_available_devices() {
+    assigner="$1"
+    db_file="$2"
+    runid=$3
+    budget=$4
+    shift 4
+    devs=""
+    while [[ -z "$devs" ]]; do
+        experiments="$(tmux list-sessions -F '#S' -f '#{m:exp*,#S}')"
+        echo "[experiments] $experiments"
+        echo '[to inspect] tmux capture-pane -pt <experiment>'
+        $assigner refresh $experiments --db_file $db_file
+        devs=$($assigner allocate $runid $budget --db_file $db_file)
+        echo "[assigned available devices] $devs"
+        sleep 5
+    done
+    export CUDA_VISIBLE_DEVICES=$devs
+}
