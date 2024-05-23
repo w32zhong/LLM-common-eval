@@ -21,6 +21,7 @@ def priority_Q(devices):
 
 def allocate(runid, budget, db_file='./gpu_assigner_db.json',
              min_vram=1, verbose=False, output_file='/dev/stdout'):
+    open(output_file, 'w').close()
     assert os.path.exists(db_file)
     with open(db_file, 'r') as fh:
         db = json.load(fh)
