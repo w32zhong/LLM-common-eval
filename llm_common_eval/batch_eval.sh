@@ -50,7 +50,9 @@ function block_until_set_available_devices() {
         echo "[experiments] $experiments"
         echo '[to inspect] tmux capture-pane -pt <experiment>'
         bash -c "$assigner refresh $experiments --db_file $db_file"
-        devs=$(bash -c "$assigner allocate $runid $budget --db_file $db_file")
+        bash -c "$assigner allocate $runid $budget --verbose True \
+            --db_file $db_file --output_file /tmp/gpu_assigner_output.txt"
+        devs=$(cat /tmp/gpu_assigner_output.txt)
         echo "[assigned available devices] $devs"
         sleep 5
     done
