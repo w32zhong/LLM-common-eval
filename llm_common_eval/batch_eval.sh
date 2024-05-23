@@ -49,8 +49,8 @@ function block_until_set_available_devices() {
         experiments="$(tmux list-sessions -F '#S' -f '#{m:exp*,#S}')"
         echo "[experiments] $experiments"
         echo '[to inspect] tmux capture-pane -pt <experiment>'
-        $assigner refresh $experiments --db_file $db_file
-        devs=$($assigner allocate $runid $budget --db_file $db_file)
+        bash -c "$assigner refresh $experiments --db_file $db_file"
+        devs=$(bash -c "$assigner allocate $runid $budget --db_file $db_file")
         echo "[assigned available devices] $devs"
         sleep 5
     done
