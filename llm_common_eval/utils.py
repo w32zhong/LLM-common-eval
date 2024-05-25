@@ -307,4 +307,7 @@ def reset_vram_monitor():
 
 def get_vram_peak():
     import torch
-    return torch.cuda.max_memory_allocated() / (1024 ** 3)
+    vram = 0
+    for i in range(torch.cuda.device_count()):
+        vram += torch.cuda.max_memory_allocated(i)
+    return vram / (1024 ** 3)
