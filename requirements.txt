@@ -12,6 +12,6 @@ rouge_score
 bert-score
 bitsandbytes
 fastchat
-openai
+openai==0.28.1
 anthropic
 colorama
