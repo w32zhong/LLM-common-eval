@@ -4,7 +4,7 @@
 from transformers import StoppingCriteria
 from transformers import StoppingCriteriaList
 
-common_stops = ['<|endoftext|>', '<|im_end|>', '</s>']
+common_stops = ['<|endoftext|>', '<|im_end|>', '</s>', '<|end|>']
 newline_stops = ['\n']
 double_newline_stops = ['\n\n']
 newsect_stops = ['##']
