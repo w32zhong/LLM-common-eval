@@ -15,3 +15,4 @@ fastchat
 openai==0.28.1
 anthropic
 colorama
+protobuf
