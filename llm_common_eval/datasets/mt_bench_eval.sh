@@ -1,8 +1,8 @@
 LOGDIR="$@"
+source .env
 
 function init() {
     #pip uninstall -y fschat
-    source .env
     cp mt_bench.patch mt_bench/fastchat/llm_judge
     pushd mt_bench/fastchat/llm_judge
     git apply mt_bench.patch 2> /dev/null
