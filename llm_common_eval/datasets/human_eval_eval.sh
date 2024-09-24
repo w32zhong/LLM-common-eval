@@ -3,6 +3,7 @@ LOGDIR="$@"
 function init() {
     cp human_eval.patch human_eval/
     pushd human_eval
+    rm -f results.txt
     git apply human_eval.patch
     popd
 }
@@ -36,6 +37,7 @@ function evaluate() {
         python -m human_eval.evaluate_functional_correctness $file
         set +x
     done
+    cat results.txt
     popd
 }
 
@@ -43,4 +45,3 @@ init
 convert
 evaluate
 reset
-cat ./human_eval/results.txt
