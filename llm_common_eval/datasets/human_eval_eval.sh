@@ -10,6 +10,7 @@ function init() {
 function reset() {
     cp human_eval.patch human_eval/
     pushd human_eval
+    rm -rf data
     git checkout .
     popd
 }
@@ -42,3 +43,4 @@ init
 convert
 evaluate
 reset
+cat ./human_eval/results.txt
