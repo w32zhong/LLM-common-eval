@@ -15,12 +15,21 @@ class KeywordsStopper(StoppingCriteria):
         self.keywords = keywords
         self.tokenizer = tokenizer
         self.prompt_lengths = 0
+        self.tokens = self.compile_stop_tokens()
 
     def is_stop(self, text):
         for kw in self.keywords:
             if kw in text:
                 return True
         return False
+
+    def compile_stop_tokens(self):
+        tokens = []
+        for kw in self.keywords:
+            code = self.tokenizer.encode(kw)
+            if len(code) == 1:
+                tokens.append(code[0])
+        return tokens
 
     def rm_stop(self, text):
         for kw in self.keywords:
