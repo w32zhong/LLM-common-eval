@@ -3,8 +3,7 @@ einops
 s3fs
 fs
 accelerate
-datasets==2.21.0
-fsspec==2023.9.2
+datasets
 scikit-learn
 fire
 nltk
