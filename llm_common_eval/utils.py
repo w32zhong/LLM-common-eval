@@ -312,11 +312,13 @@ def string_spans_wrapper(x, spans, wrapper=('[[', ']]')):
 def reset_vram_monitor():
     import torch
     torch.cuda.empty_cache()
-    torch.cuda.reset_max_memory_allocated()
+    #torch.cuda.reset_max_memory_allocated()
+    torch.cuda.reset_peak_memory_stats()
 
 def get_vram_peak():
     import torch
     vram = 0
     for i in range(torch.cuda.device_count()):
-        vram += torch.cuda.max_memory_allocated(i)
+        #vram += torch.cuda.max_memory_allocated(i)
+        vram += torch.cuda.max_memory_reserved(i)
     return vram / (1024 ** 3)

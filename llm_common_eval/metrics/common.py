@@ -251,9 +251,9 @@ class VRAM_Usage():
         min_load_vram = min([x[0] for x in self.samples])
         mean_peak_vram = statistics.mean([x[1] for x in self.samples])
         max_peak_vram = max([x[1] for x in self.samples])
-        if len(self.samples) >= 2:
+        try:
             var_peak_vram = statistics.stdev([x[1] for x in self.samples])
-        else:
+        except:
             var_peak_vram = -1
         return dict(name=self.name,
             min_load_vram=min_load_vram,
