@@ -35,6 +35,7 @@ def allocate(runid, budget, db_file='./gpu_assigner_db.json',
 
     inf = float('inf')
     allocated_devices = []
+    CUDA_VISIBLE_DEVICES = os.environ['CUDA_VISIBLE_DEVICES'].split(',')
     for _ in range(n):
         for i, avail, total in priority_Q(devices):
             if verbose:
@@ -58,7 +59,11 @@ def allocate(runid, budget, db_file='./gpu_assigner_db.json',
         with open(db_file, 'w') as fh:
             json.dump(db, fh)
         with open(output_file, 'w') as fh:
-            fh.write(','.join(allocated_devices))
+            mapped = [
+                CUDA_VISIBLE_DEVICES[int(ordinal)]
+                for ordinal in allocated_devices
+            ]
+            fh.write(','.join(mapped))
 
 
 def refresh(*all_runids, db_file='./gpu_assigner_db.json'):
