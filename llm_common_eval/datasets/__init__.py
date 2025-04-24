@@ -1,6 +1,6 @@
 import os
 import sys
-from datasets import Dataset
+from datasets import Dataset, load_dataset
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,3 +22,11 @@ def human_eval():
     def generator():
         for q in problems.values(): yield q
     return Dataset.from_generator(generator)
+
+def share_gpt():
+    dataset_path = dict(
+        path="Aeala/ShareGPT_Vicuna_unfiltered",
+        data_files=["ShareGPT_V4.3_unfiltered_cleaned_split.json"],
+        revision='8b0048ad6ae8c22f46a78c15559dec98feef5539'
+    )
+    return load_dataset(**dataset_path)['train']
