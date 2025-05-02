@@ -59,3 +59,7 @@ function block_until_set_available_devices() {
     done
     export CUDA_VISIBLE_DEVICES=$devs
 }
+
+function kill_all_exp_sessions() {
+    tmux list-sessions -F '#S' -f '#{m:dat*,#S}' | xargs -n 1 tmux kill-session -t
+}
