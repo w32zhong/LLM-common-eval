@@ -102,6 +102,8 @@ def data_generator(dataset, **kwargs):
                 print("[process fd] /proc/{0}/fd/0".format(os.getpid()))
                 prompt = input('Input: ')
                 yield [dict(prompt=prompt)]
+        elif isinstance(dataset, str): # manual input
+            yield [dict(prompt=dataset)]
         else:
             for data in DataLoader(dataset, **kwargs):
                 yield data
