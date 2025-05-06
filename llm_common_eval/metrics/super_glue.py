@@ -1,7 +1,11 @@
 from .common import MetricBase
-from datasets import load_metric
-# For super_glue metrics implementation, refer to:
-# https://github.com/huggingface/datasets/tree/main/metrics/super_glue
+
+try:
+    from datasets import load_metric
+    # For super_glue metrics implementation, refer to:
+    # https://github.com/huggingface/datasets/tree/main/metrics/super_glue
+except:
+    pass
 
 
 class Default_metrics(MetricBase):

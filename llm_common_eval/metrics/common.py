@@ -4,7 +4,10 @@ import math
 import statistics
 import itertools
 
-from rouge_score import rouge_scorer
+try:
+    from rouge_score import rouge_scorer
+except:
+    pass
 
 
 class MetricBase():

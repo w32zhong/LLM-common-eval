@@ -119,12 +119,11 @@ def get_git_diff():
 # logging filesystem
 #####################
 import configparser
-import fs.osfs
-import s3fs
 from datetime import datetime
 import re
 import os
 import sys
+import fs.osfs
 
 
 # reference interface class
@@ -150,27 +149,30 @@ class LocalLogFS(fs.osfs.OSFS):
         return super().makedir(path, recreate=recreate)
 
 
-class RemoteS3LogFS(LogFS):
-    def __init__(self, endpoint_url, bucket):
-        self.fs = s3fs.S3FileSystem(
-            client_kwargs=dict(
-                endpoint_url=endpoint_url
+try:
+    import s3fs
+    class RemoteS3LogFS(LogFS):
+        def __init__(self, endpoint_url, bucket):
+            self.fs = s3fs.S3FileSystem(
+                client_kwargs=dict(
+                    endpoint_url=endpoint_url
+                )
             )
-        )
-        self.bucket = bucket
+            self.bucket = bucket
 
-    def listdir(self, path):
-        return self.fs.ls(self.bucket + '/' + path)
+        def listdir(self, path):
+            return self.fs.ls(self.bucket + '/' + path)
 
-    def makedir(self, path, recreate=True):
-        return self.fs.mkdir(self.bucket + '/' + path, create_parents=recreate)
+        def makedir(self, path, recreate=True):
+            return self.fs.mkdir(self.bucket + '/' + path, create_parents=recreate)
 
-    def open(self, path, mode):
-        return self.fs.open(self.bucket + '/' + path, mode=mode)
+        def open(self, path, mode):
+            return self.fs.open(self.bucket + '/' + path, mode=mode)
 
-    def exists(self, path):
-        return self.fs.exists(self.bucket + '/' + path)
-
+        def exists(self, path):
+            return self.fs.exists(self.bucket + '/' + path)
+except:
+    pass
 
 ###################
 # logging endpoint

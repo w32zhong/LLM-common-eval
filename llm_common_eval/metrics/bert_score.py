@@ -1,10 +1,14 @@
 import statistics
 from collections import defaultdict
 from .common import MetricBase
-from bert_score import get_model as bert_score_get_model
-from bert_score import get_tokenizer as bert_score_get_tokenizer
-from bert_score import bert_cos_score_idf
-from bert_score.utils import model2layers as bert_score_model2layers
+
+try:
+    from bert_score import get_model as bert_score_get_model
+    from bert_score import get_tokenizer as bert_score_get_tokenizer
+    from bert_score import bert_cos_score_idf
+    from bert_score.utils import model2layers as bert_score_model2layers
+except:
+    pass
 
 
 # ref: https://github.com/Tiiiger/bert_score/blob/dbcf6db37e8bd6ff68446f06b0ba5d0763b62d20/bert_score/score.py#L21
