@@ -1,13 +1,26 @@
 import os
 import sys
 from datasets import Dataset, load_dataset
+from typing import Optional
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
+# extract mt-bench function to avoid load a bunch of dependencies there
+def load_questions(question_file: str, begin: Optional[int], end: Optional[int]):
+    """Load questions from a file."""
+    questions = []
+    with open(question_file, "r") as ques_file:
+        for line in ques_file:
+            if line:
+                questions.append(json.loads(line))
+    questions = questions[begin:end]
+    return questions
+
+
 def mt_bench():
     sys.path.insert(0, f'{script_dir}/mt_bench/fastchat/llm_judge')
-    from common import load_questions
+    #from common import load_questions
     question_file = f'{script_dir}/mt_bench/fastchat/llm_judge/data/mt_bench/question.jsonl'
     questions = load_questions(question_file, None, None)
     def generator():
