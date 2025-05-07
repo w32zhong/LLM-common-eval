@@ -99,7 +99,8 @@ def get_git_revision():
     try:
         dirname = os.path.dirname(os.path.abspath(__file__))
         return subprocess.check_output(
-            ['git', 'rev-parse', 'HEAD'], cwd=dirname
+            ['git', 'rev-parse', 'HEAD'], cwd=dirname,
+            stderr=subprocess.DEVNULL
         ).decode('ascii').strip()
     except:
         return 'N/A'
@@ -109,7 +110,8 @@ def get_git_diff():
     try:
         dirname = os.path.dirname(os.path.abspath(__file__))
         return subprocess.check_output(
-            ['git', 'diff', 'HEAD'], cwd=dirname
+            ['git', 'diff', 'HEAD'], cwd=dirname,
+            stderr=subprocess.DEVNULL
         ).decode('utf-8').strip()
     except:
         return 'N/A'
