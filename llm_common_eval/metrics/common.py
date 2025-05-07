@@ -69,8 +69,8 @@ class TokenStats(MetricBase):
         ]
         self.samples.append((inp_tokens, out_tokens, time_costs))
 
-    def avg_trials(self, trials, val_fn):
-        return statistics.mean(val_fn(x) for x in trials)
+    def sum_trials(self, trials, val_fn):
+        return sum(val_fn(x) for x in trials)
 
     def stats(self, name, samples):
         return {
@@ -89,11 +89,11 @@ class TokenStats(MetricBase):
             )
             out_tokens_stats = self.stats(
                 'output_tokens',
-                [self.avg_trials(s[1], len) for s in self.samples]
+                [self.sum_trials(s[1], len) for s in self.samples]
             )
             time_costs_stats = self.stats(
                 'time_cost',
-                [self.avg_trials(s[2], float) for s in self.samples]
+                [self.sum_trials(s[2], float) for s in self.samples]
             )
             time_cost_per_token = (time_costs_stats['sum_time_cost']
                 / max(1, out_tokens_stats['sum_output_tokens']))
