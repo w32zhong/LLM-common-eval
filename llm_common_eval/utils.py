@@ -29,6 +29,8 @@ class KeywordsStopper(StoppingCriteria):
             code = self.tokenizer.encode(kw)
             if len(code) == 1:
                 tokens.append(code[0])
+            else:
+                tokens.append(code[-1]) # e.g., Llama 3.0 tokenizer
         assert len(tokens) > 0
         return tokens
 
