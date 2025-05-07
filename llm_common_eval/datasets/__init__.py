@@ -2,6 +2,7 @@ import os
 import sys
 from datasets import Dataset, load_dataset
 from typing import Optional
+import json
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
