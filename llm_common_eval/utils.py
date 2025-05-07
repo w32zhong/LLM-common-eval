@@ -17,9 +17,9 @@ class KeywordsStopper(StoppingCriteria):
         self.prompt_lengths = 0
         self.tokens = self.compile_stop_tokens()
 
-    def is_stop(self, text):
-        for kw in self.keywords:
-            if kw in text:
+    def is_stop(self, ids):
+        for tok in self.tokens:
+            if tok in ids:
                 return True
         return False
 
@@ -40,12 +40,11 @@ class KeywordsStopper(StoppingCriteria):
         return text
 
     def __call__(self, input_ids, scores, **kwargs):
-        batch_text = []
+        batch_ids = []
         for b, ids in enumerate(input_ids):
             ids = ids[self.prompt_lengths[b]:]
-            text = self.tokenizer.decode(ids)
-            batch_text.append(text)
-        batch_stop = (self.is_stop(b) for b in batch_text)
+            batch_ids.append(ids)
+        batch_stop = (self.is_stop(ids) for ids in batch_ids)
         return all(batch_stop)
 
     def make_list(self, prompt_lengths):
