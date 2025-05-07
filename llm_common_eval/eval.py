@@ -32,6 +32,7 @@ def collate_passthrough(batch_data):
     return batch_data
 
 
+@torch.no_grad()
 def do_inference(model_setting, batch_data, data_adapter, n_trials, multi_turn):
     reset_vram_monitor()
     vram_base, vram_peak = get_vram_peak(), None
