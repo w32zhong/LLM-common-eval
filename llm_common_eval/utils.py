@@ -29,6 +29,7 @@ class KeywordsStopper(StoppingCriteria):
             code = self.tokenizer.encode(kw)
             if len(code) == 1:
                 tokens.append(code[0])
+        assert len(tokens) > 0
         return tokens
 
     def rm_stop(self, text):
