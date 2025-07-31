@@ -157,7 +157,7 @@ pip install --default-timeout=100 autoawq
 pip install -r requirements.txt
 ```
 
-## Utilis
+## Experiments Utilities
 * kill_all_exp_by_PIDs: See `llm_common_eval/batch_eval.sh`
 * `watch tmux capture-pane -pt exp-27990 -S50`
 * `watch tmux list-sessions`
