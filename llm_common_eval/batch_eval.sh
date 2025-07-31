@@ -65,5 +65,5 @@ function kill_all_exp_sessions() {
 }
 
 function kill_all_exp_by_PIDs() {
-    nvidia-smi --query-compute-apps=pid --format=csv,noheader | xargs sudo kill -9
+    nvidia-smi --query-compute-apps=pid --format=csv,noheader | xargs kill -9
 }
