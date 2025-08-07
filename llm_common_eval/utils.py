@@ -208,7 +208,7 @@ def init_logging_prefix(log_fs, script_path):
     script_name = re.sub(r'\.py$', '', script_name)
     log_fs.makedir(script_name)
 
-    timestamp = f'{datetime.now():%Y-%m-%d_%H:%M:%S%z}'
+    timestamp = f'{datetime.now():%Y-%m-%d_%H_%M_%S%z}'
     git_rev = get_git_revision()
     report_file = f'{script_name}/report-{timestamp}.run'
     with log_fs.open(report_file, 'w') as fh:
